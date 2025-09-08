@@ -1,7 +1,7 @@
 {
   "config": {
-    "configFile": "C:\\Users\\Janazi\\OneDrive - V8.TECH\\integration-agent\\playwright.config.ts",
-    "rootDir": "C:/Users/Janazi/OneDrive - V8.TECH/integration-agent/tests",
+    "configFile": "C:\\Users\\marqu\\Downloads\\integration-agent\\playwright.config.ts",
+    "rootDir": "C:/Users/marqu/Downloads/integration-agent/tests",
     "forbidOnly": false,
     "fullyParallel": false,
     "globalSetup": null,
@@ -40,7 +40,7 @@
     "quiet": false,
     "projects": [
       {
-        "outputDir": "C:/Users/Janazi/OneDrive - V8.TECH/integration-agent/test-results",
+        "outputDir": "C:/Users/marqu/Downloads/integration-agent/test-results",
         "repeatEach": 1,
         "retries": 1,
         "metadata": {
@@ -48,7 +48,7 @@
         },
         "id": "chromium",
         "name": "chromium",
-        "testDir": "C:/Users/Janazi/OneDrive - V8.TECH/integration-agent/tests",
+        "testDir": "C:/Users/marqu/Downloads/integration-agent/tests",
         "testIgnore": [],
         "testMatch": [
           "**/*.@(spec|test).?(c|m)[jt]s?(x)"
@@ -60,7 +60,7 @@
     "updateSnapshots": "missing",
     "updateSourceMethod": "patch",
     "version": "1.55.0",
-    "workers": 6,
+    "workers": 4,
     "webServer": null
   },
   "suites": [
@@ -74,7 +74,7 @@
         {
           "title": "Login no Parabank",
           "file": "ai_generated/login.spec.ts",
-          "line": 17,
+          "line": 18,
           "column": 6,
           "specs": [
             {
@@ -93,116 +93,116 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 8391,
+                      "duration": 9361,
                       "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m()\u001b[22m failed\n\nLocator:  getByRole('heading', { name: 'ParaBank' })\nExpected: visible\nReceived: <element(s) not found>\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'ParaBank' })\u001b[22m\n",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m()\u001b[22m failed\n\nLocator:  getByRole('heading', { name: 'ParaBank' })\nExpected: visible\nReceived: <element(s) not found>\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'ParaBank' })\u001b[22m\n\n    at openHome (C:\\Users\\Janazi\\OneDrive - V8.TECH\\integration-agent\\tests\\ai_generated\\login.spec.ts:14:65)\n    at C:\\Users\\Janazi\\OneDrive - V8.TECH\\integration-agent\\tests\\ai_generated\\login.spec.ts:19:5",
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.error')\nExpected string: \u001b[32m\"\u001b[7mcould not be verifi\u001b[27med\"\u001b[39m\nReceived string: \u001b[31m\"\u001b[7mAn internal error has occurred and has been logg\u001b[27med\u001b[7m.\u001b[27m\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('.error')\u001b[22m\n\u001b[2m    5 × locator resolved to <p class=\"error\">An internal error has occurred and has been logge…</p>\u001b[22m\n\u001b[2m      - unexpected value \"An internal error has occurred and has been logged.\"\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.error')\nExpected string: \u001b[32m\"\u001b[7mcould not be verifi\u001b[27med\"\u001b[39m\nReceived string: \u001b[31m\"\u001b[7mAn internal error has occurred and has been logg\u001b[27med\u001b[7m.\u001b[27m\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('.error')\u001b[22m\n\u001b[2m    5 × locator resolved to <p class=\"error\">An internal error has occurred and has been logge…</p>\u001b[22m\n\u001b[2m      - unexpected value \"An internal error has occurred and has been logged.\"\u001b[22m\n\n    at C:\\Users\\marqu\\Downloads\\integration-agent\\tests\\ai_generated\\login.spec.ts:26:60",
                         "location": {
-                          "file": "C:\\Users\\Janazi\\OneDrive - V8.TECH\\integration-agent\\tests\\ai_generated\\login.spec.ts",
-                          "column": 65,
-                          "line": 14
+                          "file": "C:\\Users\\marqu\\Downloads\\integration-agent\\tests\\ai_generated\\login.spec.ts",
+                          "column": 60,
+                          "line": 26
                         },
-                        "snippet": "\u001b[0m \u001b[90m 12 |\u001b[39m \u001b[36masync\u001b[39m \u001b[36mfunction\u001b[39m openHome(page) {\n \u001b[90m 13 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[33mHOME\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 14 |\u001b[39m   \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'heading'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[32m'ParaBank'\u001b[39m }))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                 \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 15 |\u001b[39m }\n \u001b[90m 16 |\u001b[39m\n \u001b[90m 17 |\u001b[39m test\u001b[33m.\u001b[39mdescribe(\u001b[32m'Login no Parabank'\u001b[39m\u001b[33m,\u001b[39m () \u001b[33m=>\u001b[39m {\u001b[0m"
+                        "snippet": "\u001b[0m \u001b[90m 24 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[33mLoginLocators\u001b[39m\u001b[33m.\u001b[39mloginButton)\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m 25 |\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 26 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[33mLoginLocators\u001b[39m\u001b[33m.\u001b[39merrorMessage))\u001b[33m.\u001b[39mtoContainText(\n \u001b[90m    |\u001b[39m                                                            \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 27 |\u001b[39m       \u001b[32m'could not be verified'\u001b[39m\n \u001b[90m 28 |\u001b[39m     )\u001b[33m;\u001b[39m\n \u001b[90m 29 |\u001b[39m   })\u001b[33m;\u001b[39m\u001b[0m"
                       },
                       "errors": [
                         {
                           "location": {
-                            "file": "C:\\Users\\Janazi\\OneDrive - V8.TECH\\integration-agent\\tests\\ai_generated\\login.spec.ts",
-                            "column": 65,
-                            "line": 14
+                            "file": "C:\\Users\\marqu\\Downloads\\integration-agent\\tests\\ai_generated\\login.spec.ts",
+                            "column": 60,
+                            "line": 26
                           },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m()\u001b[22m failed\n\nLocator:  getByRole('heading', { name: 'ParaBank' })\nExpected: visible\nReceived: <element(s) not found>\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'ParaBank' })\u001b[22m\n\n\n\u001b[0m \u001b[90m 12 |\u001b[39m \u001b[36masync\u001b[39m \u001b[36mfunction\u001b[39m openHome(page) {\n \u001b[90m 13 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[33mHOME\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 14 |\u001b[39m   \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'heading'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[32m'ParaBank'\u001b[39m }))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                 \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 15 |\u001b[39m }\n \u001b[90m 16 |\u001b[39m\n \u001b[90m 17 |\u001b[39m test\u001b[33m.\u001b[39mdescribe(\u001b[32m'Login no Parabank'\u001b[39m\u001b[33m,\u001b[39m () \u001b[33m=>\u001b[39m {\u001b[0m\n\u001b[2m    at openHome (C:\\Users\\Janazi\\OneDrive - V8.TECH\\integration-agent\\tests\\ai_generated\\login.spec.ts:14:65)\u001b[22m\n\u001b[2m    at C:\\Users\\Janazi\\OneDrive - V8.TECH\\integration-agent\\tests\\ai_generated\\login.spec.ts:19:5\u001b[22m"
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.error')\nExpected string: \u001b[32m\"\u001b[7mcould not be verifi\u001b[27med\"\u001b[39m\nReceived string: \u001b[31m\"\u001b[7mAn internal error has occurred and has been logg\u001b[27med\u001b[7m.\u001b[27m\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('.error')\u001b[22m\n\u001b[2m    5 × locator resolved to <p class=\"error\">An internal error has occurred and has been logge…</p>\u001b[22m\n\u001b[2m      - unexpected value \"An internal error has occurred and has been logged.\"\u001b[22m\n\n\n\u001b[0m \u001b[90m 24 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[33mLoginLocators\u001b[39m\u001b[33m.\u001b[39mloginButton)\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m 25 |\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 26 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[33mLoginLocators\u001b[39m\u001b[33m.\u001b[39merrorMessage))\u001b[33m.\u001b[39mtoContainText(\n \u001b[90m    |\u001b[39m                                                            \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 27 |\u001b[39m       \u001b[32m'could not be verified'\u001b[39m\n \u001b[90m 28 |\u001b[39m     )\u001b[33m;\u001b[39m\n \u001b[90m 29 |\u001b[39m   })\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\marqu\\Downloads\\integration-agent\\tests\\ai_generated\\login.spec.ts:26:60\u001b[22m"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-09-08T14:58:37.036Z",
+                      "startTime": "2025-09-08T17:30:58.828Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "C:\\Users\\Janazi\\OneDrive - V8.TECH\\integration-agent\\test-results\\ai_generated-login-Login-no-Parabank-Login-inválido-chromium\\test-failed-1.png"
+                          "path": "C:\\Users\\marqu\\Downloads\\integration-agent\\test-results\\ai_generated-login-Login-no-Parabank-Login-inválido-chromium\\test-failed-1.png"
                         },
                         {
                           "name": "video",
                           "contentType": "video/webm",
-                          "path": "C:\\Users\\Janazi\\OneDrive - V8.TECH\\integration-agent\\test-results\\ai_generated-login-Login-no-Parabank-Login-inválido-chromium\\video.webm"
+                          "path": "C:\\Users\\marqu\\Downloads\\integration-agent\\test-results\\ai_generated-login-Login-no-Parabank-Login-inválido-chromium\\video.webm"
                         },
                         {
                           "name": "error-context",
                           "contentType": "text/markdown",
-                          "path": "C:\\Users\\Janazi\\OneDrive - V8.TECH\\integration-agent\\test-results\\ai_generated-login-Login-no-Parabank-Login-inválido-chromium\\error-context.md"
+                          "path": "C:\\Users\\marqu\\Downloads\\integration-agent\\test-results\\ai_generated-login-Login-no-Parabank-Login-inválido-chromium\\error-context.md"
                         },
                         {
                           "name": "trace",
                           "contentType": "application/zip",
-                          "path": "C:\\Users\\Janazi\\OneDrive - V8.TECH\\integration-agent\\test-results\\ai_generated-login-Login-no-Parabank-Login-inválido-chromium\\trace.zip"
+                          "path": "C:\\Users\\marqu\\Downloads\\integration-agent\\test-results\\ai_generated-login-Login-no-Parabank-Login-inválido-chromium\\trace.zip"
                         }
                       ],
                       "errorLocation": {
-                        "file": "C:\\Users\\Janazi\\OneDrive - V8.TECH\\integration-agent\\tests\\ai_generated\\login.spec.ts",
-                        "column": 65,
-                        "line": 14
+                        "file": "C:\\Users\\marqu\\Downloads\\integration-agent\\tests\\ai_generated\\login.spec.ts",
+                        "column": 60,
+                        "line": 26
                       }
                     },
                     {
                       "workerIndex": 1,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 9739,
+                      "duration": 7474,
                       "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m()\u001b[22m failed\n\nLocator:  getByRole('heading', { name: 'ParaBank' })\nExpected: visible\nReceived: <element(s) not found>\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'ParaBank' })\u001b[22m\n",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m()\u001b[22m failed\n\nLocator:  getByRole('heading', { name: 'ParaBank' })\nExpected: visible\nReceived: <element(s) not found>\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'ParaBank' })\u001b[22m\n\n    at openHome (C:\\Users\\Janazi\\OneDrive - V8.TECH\\integration-agent\\tests\\ai_generated\\login.spec.ts:14:65)\n    at C:\\Users\\Janazi\\OneDrive - V8.TECH\\integration-agent\\tests\\ai_generated\\login.spec.ts:19:5",
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.error')\nExpected string: \u001b[32m\"\u001b[7mcould not be verifi\u001b[27med\"\u001b[39m\nReceived string: \u001b[31m\"\u001b[7mAn internal error has occurred and has been logg\u001b[27med\u001b[7m.\u001b[27m\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('.error')\u001b[22m\n\u001b[2m    7 × locator resolved to <p class=\"error\">An internal error has occurred and has been logge…</p>\u001b[22m\n\u001b[2m      - unexpected value \"An internal error has occurred and has been logged.\"\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.error')\nExpected string: \u001b[32m\"\u001b[7mcould not be verifi\u001b[27med\"\u001b[39m\nReceived string: \u001b[31m\"\u001b[7mAn internal error has occurred and has been logg\u001b[27med\u001b[7m.\u001b[27m\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('.error')\u001b[22m\n\u001b[2m    7 × locator resolved to <p class=\"error\">An internal error has occurred and has been logge…</p>\u001b[22m\n\u001b[2m      - unexpected value \"An internal error has occurred and has been logged.\"\u001b[22m\n\n    at C:\\Users\\marqu\\Downloads\\integration-agent\\tests\\ai_generated\\login.spec.ts:26:60",
                         "location": {
-                          "file": "C:\\Users\\Janazi\\OneDrive - V8.TECH\\integration-agent\\tests\\ai_generated\\login.spec.ts",
-                          "column": 65,
-                          "line": 14
+                          "file": "C:\\Users\\marqu\\Downloads\\integration-agent\\tests\\ai_generated\\login.spec.ts",
+                          "column": 60,
+                          "line": 26
                         },
-                        "snippet": "\u001b[0m \u001b[90m 12 |\u001b[39m \u001b[36masync\u001b[39m \u001b[36mfunction\u001b[39m openHome(page) {\n \u001b[90m 13 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[33mHOME\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 14 |\u001b[39m   \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'heading'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[32m'ParaBank'\u001b[39m }))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                 \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 15 |\u001b[39m }\n \u001b[90m 16 |\u001b[39m\n \u001b[90m 17 |\u001b[39m test\u001b[33m.\u001b[39mdescribe(\u001b[32m'Login no Parabank'\u001b[39m\u001b[33m,\u001b[39m () \u001b[33m=>\u001b[39m {\u001b[0m"
+                        "snippet": "\u001b[0m \u001b[90m 24 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[33mLoginLocators\u001b[39m\u001b[33m.\u001b[39mloginButton)\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m 25 |\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 26 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[33mLoginLocators\u001b[39m\u001b[33m.\u001b[39merrorMessage))\u001b[33m.\u001b[39mtoContainText(\n \u001b[90m    |\u001b[39m                                                            \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 27 |\u001b[39m       \u001b[32m'could not be verified'\u001b[39m\n \u001b[90m 28 |\u001b[39m     )\u001b[33m;\u001b[39m\n \u001b[90m 29 |\u001b[39m   })\u001b[33m;\u001b[39m\u001b[0m"
                       },
                       "errors": [
                         {
                           "location": {
-                            "file": "C:\\Users\\Janazi\\OneDrive - V8.TECH\\integration-agent\\tests\\ai_generated\\login.spec.ts",
-                            "column": 65,
-                            "line": 14
+                            "file": "C:\\Users\\marqu\\Downloads\\integration-agent\\tests\\ai_generated\\login.spec.ts",
+                            "column": 60,
+                            "line": 26
                           },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m()\u001b[22m failed\n\nLocator:  getByRole('heading', { name: 'ParaBank' })\nExpected: visible\nReceived: <element(s) not found>\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'ParaBank' })\u001b[22m\n\n\n\u001b[0m \u001b[90m 12 |\u001b[39m \u001b[36masync\u001b[39m \u001b[36mfunction\u001b[39m openHome(page) {\n \u001b[90m 13 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[33mHOME\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 14 |\u001b[39m   \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'heading'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[32m'ParaBank'\u001b[39m }))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                 \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 15 |\u001b[39m }\n \u001b[90m 16 |\u001b[39m\n \u001b[90m 17 |\u001b[39m test\u001b[33m.\u001b[39mdescribe(\u001b[32m'Login no Parabank'\u001b[39m\u001b[33m,\u001b[39m () \u001b[33m=>\u001b[39m {\u001b[0m\n\u001b[2m    at openHome (C:\\Users\\Janazi\\OneDrive - V8.TECH\\integration-agent\\tests\\ai_generated\\login.spec.ts:14:65)\u001b[22m\n\u001b[2m    at C:\\Users\\Janazi\\OneDrive - V8.TECH\\integration-agent\\tests\\ai_generated\\login.spec.ts:19:5\u001b[22m"
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.error')\nExpected string: \u001b[32m\"\u001b[7mcould not be verifi\u001b[27med\"\u001b[39m\nReceived string: \u001b[31m\"\u001b[7mAn internal error has occurred and has been logg\u001b[27med\u001b[7m.\u001b[27m\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('.error')\u001b[22m\n\u001b[2m    7 × locator resolved to <p class=\"error\">An internal error has occurred and has been logge…</p>\u001b[22m\n\u001b[2m      - unexpected value \"An internal error has occurred and has been logged.\"\u001b[22m\n\n\n\u001b[0m \u001b[90m 24 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[33mLoginLocators\u001b[39m\u001b[33m.\u001b[39mloginButton)\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m 25 |\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 26 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[33mLoginLocators\u001b[39m\u001b[33m.\u001b[39merrorMessage))\u001b[33m.\u001b[39mtoContainText(\n \u001b[90m    |\u001b[39m                                                            \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 27 |\u001b[39m       \u001b[32m'could not be verified'\u001b[39m\n \u001b[90m 28 |\u001b[39m     )\u001b[33m;\u001b[39m\n \u001b[90m 29 |\u001b[39m   })\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\marqu\\Downloads\\integration-agent\\tests\\ai_generated\\login.spec.ts:26:60\u001b[22m"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 1,
-                      "startTime": "2025-09-08T14:58:47.269Z",
+                      "startTime": "2025-09-08T17:31:10.333Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "C:\\Users\\Janazi\\OneDrive - V8.TECH\\integration-agent\\test-results\\ai_generated-login-Login-no-Parabank-Login-inválido-chromium-retry1\\test-failed-1.png"
+                          "path": "C:\\Users\\marqu\\Downloads\\integration-agent\\test-results\\ai_generated-login-Login-no-Parabank-Login-inválido-chromium-retry1\\test-failed-1.png"
                         },
                         {
                           "name": "video",
                           "contentType": "video/webm",
-                          "path": "C:\\Users\\Janazi\\OneDrive - V8.TECH\\integration-agent\\test-results\\ai_generated-login-Login-no-Parabank-Login-inválido-chromium-retry1\\video.webm"
+                          "path": "C:\\Users\\marqu\\Downloads\\integration-agent\\test-results\\ai_generated-login-Login-no-Parabank-Login-inválido-chromium-retry1\\video.webm"
                         },
                         {
                           "name": "error-context",
                           "contentType": "text/markdown",
-                          "path": "C:\\Users\\Janazi\\OneDrive - V8.TECH\\integration-agent\\test-results\\ai_generated-login-Login-no-Parabank-Login-inválido-chromium-retry1\\error-context.md"
+                          "path": "C:\\Users\\marqu\\Downloads\\integration-agent\\test-results\\ai_generated-login-Login-no-Parabank-Login-inválido-chromium-retry1\\error-context.md"
                         },
                         {
                           "name": "trace",
                           "contentType": "application/zip",
-                          "path": "C:\\Users\\Janazi\\OneDrive - V8.TECH\\integration-agent\\test-results\\ai_generated-login-Login-no-Parabank-Login-inválido-chromium-retry1\\trace.zip"
+                          "path": "C:\\Users\\marqu\\Downloads\\integration-agent\\test-results\\ai_generated-login-Login-no-Parabank-Login-inválido-chromium-retry1\\trace.zip"
                         }
                       ],
                       "errorLocation": {
-                        "file": "C:\\Users\\Janazi\\OneDrive - V8.TECH\\integration-agent\\tests\\ai_generated\\login.spec.ts",
-                        "column": 65,
-                        "line": 14
+                        "file": "C:\\Users\\marqu\\Downloads\\integration-agent\\tests\\ai_generated\\login.spec.ts",
+                        "column": 60,
+                        "line": 26
                       }
                     }
                   ],
@@ -211,7 +211,7 @@
               ],
               "id": "25d86a52ce6cfe98a75d-2ab723778603941a681c",
               "file": "ai_generated/login.spec.ts",
-              "line": 18,
+              "line": 19,
               "column": 3
             },
             {
@@ -230,116 +230,116 @@
                       "workerIndex": 2,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 8803,
+                      "duration": 7613,
                       "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m()\u001b[22m failed\n\nLocator:  getByRole('heading', { name: 'ParaBank' })\nExpected: visible\nReceived: <element(s) not found>\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'ParaBank' })\u001b[22m\n",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m()\u001b[22m failed\n\nLocator:  getByRole('heading', { name: 'ParaBank' })\nExpected: visible\nReceived: <element(s) not found>\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'ParaBank' })\u001b[22m\n\n    at openHome (C:\\Users\\Janazi\\OneDrive - V8.TECH\\integration-agent\\tests\\ai_generated\\login.spec.ts:14:65)\n    at C:\\Users\\Janazi\\OneDrive - V8.TECH\\integration-agent\\tests\\ai_generated\\login.spec.ts:32:5",
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#leftPanel > p')\nExpected string: \u001b[32m\"Welcome\"\u001b[39m\nReceived: <element(s) not found>\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#leftPanel > p')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#leftPanel > p')\nExpected string: \u001b[32m\"Welcome\"\u001b[39m\nReceived: <element(s) not found>\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#leftPanel > p')\u001b[22m\n\n    at C:\\Users\\marqu\\Downloads\\integration-agent\\tests\\ai_generated\\login.spec.ts:38:62",
                         "location": {
-                          "file": "C:\\Users\\Janazi\\OneDrive - V8.TECH\\integration-agent\\tests\\ai_generated\\login.spec.ts",
-                          "column": 65,
-                          "line": 14
+                          "file": "C:\\Users\\marqu\\Downloads\\integration-agent\\tests\\ai_generated\\login.spec.ts",
+                          "column": 62,
+                          "line": 38
                         },
-                        "snippet": "\u001b[0m \u001b[90m 12 |\u001b[39m \u001b[36masync\u001b[39m \u001b[36mfunction\u001b[39m openHome(page) {\n \u001b[90m 13 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[33mHOME\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 14 |\u001b[39m   \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'heading'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[32m'ParaBank'\u001b[39m }))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                 \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 15 |\u001b[39m }\n \u001b[90m 16 |\u001b[39m\n \u001b[90m 17 |\u001b[39m test\u001b[33m.\u001b[39mdescribe(\u001b[32m'Login no Parabank'\u001b[39m\u001b[33m,\u001b[39m () \u001b[33m=>\u001b[39m {\u001b[0m"
+                        "snippet": "\u001b[0m \u001b[90m 36 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[33mLoginLocators\u001b[39m\u001b[33m.\u001b[39mloginButton)\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m 37 |\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 38 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[33mLoginLocators\u001b[39m\u001b[33m.\u001b[39mwelcomeMessage))\u001b[33m.\u001b[39mtoContainText(\u001b[32m'Welcome'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                              \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 39 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 40 |\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m 41 |\u001b[39m\u001b[0m"
                       },
                       "errors": [
                         {
                           "location": {
-                            "file": "C:\\Users\\Janazi\\OneDrive - V8.TECH\\integration-agent\\tests\\ai_generated\\login.spec.ts",
-                            "column": 65,
-                            "line": 14
+                            "file": "C:\\Users\\marqu\\Downloads\\integration-agent\\tests\\ai_generated\\login.spec.ts",
+                            "column": 62,
+                            "line": 38
                           },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m()\u001b[22m failed\n\nLocator:  getByRole('heading', { name: 'ParaBank' })\nExpected: visible\nReceived: <element(s) not found>\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'ParaBank' })\u001b[22m\n\n\n\u001b[0m \u001b[90m 12 |\u001b[39m \u001b[36masync\u001b[39m \u001b[36mfunction\u001b[39m openHome(page) {\n \u001b[90m 13 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[33mHOME\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 14 |\u001b[39m   \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'heading'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[32m'ParaBank'\u001b[39m }))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                 \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 15 |\u001b[39m }\n \u001b[90m 16 |\u001b[39m\n \u001b[90m 17 |\u001b[39m test\u001b[33m.\u001b[39mdescribe(\u001b[32m'Login no Parabank'\u001b[39m\u001b[33m,\u001b[39m () \u001b[33m=>\u001b[39m {\u001b[0m\n\u001b[2m    at openHome (C:\\Users\\Janazi\\OneDrive - V8.TECH\\integration-agent\\tests\\ai_generated\\login.spec.ts:14:65)\u001b[22m\n\u001b[2m    at C:\\Users\\Janazi\\OneDrive - V8.TECH\\integration-agent\\tests\\ai_generated\\login.spec.ts:32:5\u001b[22m"
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#leftPanel > p')\nExpected string: \u001b[32m\"Welcome\"\u001b[39m\nReceived: <element(s) not found>\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#leftPanel > p')\u001b[22m\n\n\n\u001b[0m \u001b[90m 36 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[33mLoginLocators\u001b[39m\u001b[33m.\u001b[39mloginButton)\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m 37 |\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 38 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[33mLoginLocators\u001b[39m\u001b[33m.\u001b[39mwelcomeMessage))\u001b[33m.\u001b[39mtoContainText(\u001b[32m'Welcome'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                              \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 39 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 40 |\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m 41 |\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\marqu\\Downloads\\integration-agent\\tests\\ai_generated\\login.spec.ts:38:62\u001b[22m"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-09-08T14:58:58.936Z",
+                      "startTime": "2025-09-08T17:31:19.342Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "C:\\Users\\Janazi\\OneDrive - V8.TECH\\integration-agent\\test-results\\ai_generated-login-Login-no-Parabank-Login-válido-chromium\\test-failed-1.png"
+                          "path": "C:\\Users\\marqu\\Downloads\\integration-agent\\test-results\\ai_generated-login-Login-no-Parabank-Login-válido-chromium\\test-failed-1.png"
                         },
                         {
                           "name": "video",
                           "contentType": "video/webm",
-                          "path": "C:\\Users\\Janazi\\OneDrive - V8.TECH\\integration-agent\\test-results\\ai_generated-login-Login-no-Parabank-Login-válido-chromium\\video.webm"
+                          "path": "C:\\Users\\marqu\\Downloads\\integration-agent\\test-results\\ai_generated-login-Login-no-Parabank-Login-válido-chromium\\video.webm"
                         },
                         {
                           "name": "error-context",
                           "contentType": "text/markdown",
-                          "path": "C:\\Users\\Janazi\\OneDrive - V8.TECH\\integration-agent\\test-results\\ai_generated-login-Login-no-Parabank-Login-válido-chromium\\error-context.md"
+                          "path": "C:\\Users\\marqu\\Downloads\\integration-agent\\test-results\\ai_generated-login-Login-no-Parabank-Login-válido-chromium\\error-context.md"
                         },
                         {
                           "name": "trace",
                           "contentType": "application/zip",
-                          "path": "C:\\Users\\Janazi\\OneDrive - V8.TECH\\integration-agent\\test-results\\ai_generated-login-Login-no-Parabank-Login-válido-chromium\\trace.zip"
+                          "path": "C:\\Users\\marqu\\Downloads\\integration-agent\\test-results\\ai_generated-login-Login-no-Parabank-Login-válido-chromium\\trace.zip"
                         }
                       ],
                       "errorLocation": {
-                        "file": "C:\\Users\\Janazi\\OneDrive - V8.TECH\\integration-agent\\tests\\ai_generated\\login.spec.ts",
-                        "column": 65,
-                        "line": 14
+                        "file": "C:\\Users\\marqu\\Downloads\\integration-agent\\tests\\ai_generated\\login.spec.ts",
+                        "column": 62,
+                        "line": 38
                       }
                     },
                     {
                       "workerIndex": 3,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 10688,
+                      "duration": 7683,
                       "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m()\u001b[22m failed\n\nLocator:  getByRole('heading', { name: 'ParaBank' })\nExpected: visible\nReceived: <element(s) not found>\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'ParaBank' })\u001b[22m\n",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m()\u001b[22m failed\n\nLocator:  getByRole('heading', { name: 'ParaBank' })\nExpected: visible\nReceived: <element(s) not found>\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'ParaBank' })\u001b[22m\n\n    at openHome (C:\\Users\\Janazi\\OneDrive - V8.TECH\\integration-agent\\tests\\ai_generated\\login.spec.ts:14:65)\n    at C:\\Users\\Janazi\\OneDrive - V8.TECH\\integration-agent\\tests\\ai_generated\\login.spec.ts:32:5",
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#leftPanel > p')\nExpected string: \u001b[32m\"Welcome\"\u001b[39m\nReceived: <element(s) not found>\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#leftPanel > p')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#leftPanel > p')\nExpected string: \u001b[32m\"Welcome\"\u001b[39m\nReceived: <element(s) not found>\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#leftPanel > p')\u001b[22m\n\n    at C:\\Users\\marqu\\Downloads\\integration-agent\\tests\\ai_generated\\login.spec.ts:38:62",
                         "location": {
-                          "file": "C:\\Users\\Janazi\\OneDrive - V8.TECH\\integration-agent\\tests\\ai_generated\\login.spec.ts",
-                          "column": 65,
-                          "line": 14
+                          "file": "C:\\Users\\marqu\\Downloads\\integration-agent\\tests\\ai_generated\\login.spec.ts",
+                          "column": 62,
+                          "line": 38
                         },
-                        "snippet": "\u001b[0m \u001b[90m 12 |\u001b[39m \u001b[36masync\u001b[39m \u001b[36mfunction\u001b[39m openHome(page) {\n \u001b[90m 13 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[33mHOME\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 14 |\u001b[39m   \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'heading'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[32m'ParaBank'\u001b[39m }))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                 \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 15 |\u001b[39m }\n \u001b[90m 16 |\u001b[39m\n \u001b[90m 17 |\u001b[39m test\u001b[33m.\u001b[39mdescribe(\u001b[32m'Login no Parabank'\u001b[39m\u001b[33m,\u001b[39m () \u001b[33m=>\u001b[39m {\u001b[0m"
+                        "snippet": "\u001b[0m \u001b[90m 36 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[33mLoginLocators\u001b[39m\u001b[33m.\u001b[39mloginButton)\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m 37 |\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 38 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[33mLoginLocators\u001b[39m\u001b[33m.\u001b[39mwelcomeMessage))\u001b[33m.\u001b[39mtoContainText(\u001b[32m'Welcome'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                              \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 39 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 40 |\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m 41 |\u001b[39m\u001b[0m"
                       },
                       "errors": [
                         {
                           "location": {
-                            "file": "C:\\Users\\Janazi\\OneDrive - V8.TECH\\integration-agent\\tests\\ai_generated\\login.spec.ts",
-                            "column": 65,
-                            "line": 14
+                            "file": "C:\\Users\\marqu\\Downloads\\integration-agent\\tests\\ai_generated\\login.spec.ts",
+                            "column": 62,
+                            "line": 38
                           },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m()\u001b[22m failed\n\nLocator:  getByRole('heading', { name: 'ParaBank' })\nExpected: visible\nReceived: <element(s) not found>\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'ParaBank' })\u001b[22m\n\n\n\u001b[0m \u001b[90m 12 |\u001b[39m \u001b[36masync\u001b[39m \u001b[36mfunction\u001b[39m openHome(page) {\n \u001b[90m 13 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[33mHOME\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 14 |\u001b[39m   \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'heading'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[32m'ParaBank'\u001b[39m }))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                 \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 15 |\u001b[39m }\n \u001b[90m 16 |\u001b[39m\n \u001b[90m 17 |\u001b[39m test\u001b[33m.\u001b[39mdescribe(\u001b[32m'Login no Parabank'\u001b[39m\u001b[33m,\u001b[39m () \u001b[33m=>\u001b[39m {\u001b[0m\n\u001b[2m    at openHome (C:\\Users\\Janazi\\OneDrive - V8.TECH\\integration-agent\\tests\\ai_generated\\login.spec.ts:14:65)\u001b[22m\n\u001b[2m    at C:\\Users\\Janazi\\OneDrive - V8.TECH\\integration-agent\\tests\\ai_generated\\login.spec.ts:32:5\u001b[22m"
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#leftPanel > p')\nExpected string: \u001b[32m\"Welcome\"\u001b[39m\nReceived: <element(s) not found>\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#leftPanel > p')\u001b[22m\n\n\n\u001b[0m \u001b[90m 36 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[33mLoginLocators\u001b[39m\u001b[33m.\u001b[39mloginButton)\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m 37 |\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 38 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[33mLoginLocators\u001b[39m\u001b[33m.\u001b[39mwelcomeMessage))\u001b[33m.\u001b[39mtoContainText(\u001b[32m'Welcome'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                              \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 39 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 40 |\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m 41 |\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\marqu\\Downloads\\integration-agent\\tests\\ai_generated\\login.spec.ts:38:62\u001b[22m"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 1,
-                      "startTime": "2025-09-08T14:59:09.489Z",
+                      "startTime": "2025-09-08T17:31:28.389Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "C:\\Users\\Janazi\\OneDrive - V8.TECH\\integration-agent\\test-results\\ai_generated-login-Login-no-Parabank-Login-válido-chromium-retry1\\test-failed-1.png"
+                          "path": "C:\\Users\\marqu\\Downloads\\integration-agent\\test-results\\ai_generated-login-Login-no-Parabank-Login-válido-chromium-retry1\\test-failed-1.png"
                         },
                         {
                           "name": "video",
                           "contentType": "video/webm",
-                          "path": "C:\\Users\\Janazi\\OneDrive - V8.TECH\\integration-agent\\test-results\\ai_generated-login-Login-no-Parabank-Login-válido-chromium-retry1\\video.webm"
+                          "path": "C:\\Users\\marqu\\Downloads\\integration-agent\\test-results\\ai_generated-login-Login-no-Parabank-Login-válido-chromium-retry1\\video.webm"
                         },
                         {
                           "name": "error-context",
                           "contentType": "text/markdown",
-                          "path": "C:\\Users\\Janazi\\OneDrive - V8.TECH\\integration-agent\\test-results\\ai_generated-login-Login-no-Parabank-Login-válido-chromium-retry1\\error-context.md"
+                          "path": "C:\\Users\\marqu\\Downloads\\integration-agent\\test-results\\ai_generated-login-Login-no-Parabank-Login-válido-chromium-retry1\\error-context.md"
                         },
                         {
                           "name": "trace",
                           "contentType": "application/zip",
-                          "path": "C:\\Users\\Janazi\\OneDrive - V8.TECH\\integration-agent\\test-results\\ai_generated-login-Login-no-Parabank-Login-válido-chromium-retry1\\trace.zip"
+                          "path": "C:\\Users\\marqu\\Downloads\\integration-agent\\test-results\\ai_generated-login-Login-no-Parabank-Login-válido-chromium-retry1\\trace.zip"
                         }
                       ],
                       "errorLocation": {
-                        "file": "C:\\Users\\Janazi\\OneDrive - V8.TECH\\integration-agent\\tests\\ai_generated\\login.spec.ts",
-                        "column": 65,
-                        "line": 14
+                        "file": "C:\\Users\\marqu\\Downloads\\integration-agent\\tests\\ai_generated\\login.spec.ts",
+                        "column": 62,
+                        "line": 38
                       }
                     }
                   ],
@@ -348,7 +348,7 @@
               ],
               "id": "25d86a52ce6cfe98a75d-87de460d0153076d1233",
               "file": "ai_generated/login.spec.ts",
-              "line": 28,
+              "line": 31,
               "column": 3
             }
           ]
@@ -358,8 +358,8 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2025-09-08T14:58:35.584Z",
-    "duration": 45361.244999999995,
+    "startTime": "2025-09-08T17:30:57.905Z",
+    "duration": 38912.254,
     "expected": 0,
     "skipped": 0,
     "unexpected": 2,

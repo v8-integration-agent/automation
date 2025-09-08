@@ -1,38 +1,40 @@
 import { test, expect } from '@playwright/test';
 
-const HOME = '/parabank/index.htm';
+const HOME = 'https://parabank.parasoft.com/parabank/index.htm';
 
-export const LoginLocators = {
-  usernameInput: '#loginPanel > form > div:nth-child(2) > input',
-  passwordInput: '#loginPanel > form > div:nth-child(4) > input',
+const LoginLocators = {
+  usernameInput: 'input[name="username"]',
+  passwordInput: 'input[name="password"]',
   loginButton: 'input[value="Log In"]',
   welcomeMessage: '#leftPanel > p',
+  errorMessage: '.error',
 };
 
 async function openHome(page) {
-  await page.goto(HOME);
-  await expect(page.getByRole('heading', { name: 'ParaBank' })).toBeVisible();
+  await page.goto(HOME, { waitUntil: 'domcontentloaded' });
+  await expect(page.locator(LoginLocators.usernameInput)).toBeVisible();
 }
 
 test.describe('Login no Parabank', () => {
   test('Login inválido', async ({ page }) => {
     await openHome(page);
 
-    await page.locator(LoginLocators.usernameInput).fill('invalid');
-    await page.locator(LoginLocators.passwordInput).fill('invalid');
+    await page.locator(LoginLocators.usernameInput).fill('john');
+    await page.locator(LoginLocators.passwordInput).fill('senhaErrada');
     await page.locator(LoginLocators.loginButton).click();
 
-    await expect(page.getByText('could not be verified')).toBeVisible();
+    await expect(page.locator(LoginLocators.errorMessage)).toContainText(
+      'could not be verified'
+    );
   });
 
   test('Login válido', async ({ page }) => {
-    const user = 'john';
-    const pass = 'demo';
-
     await openHome(page);
 
-    await page.locator(LoginLocators.usernameInput).fill(user);
-    await page.locator(LoginLocators.passwordInput).fill(pass);
+    await page.locator(LoginLocators.usernameInput).fill('john');
+    await page.locator(LoginLocators.passwordInput).fill('demo');
     await page.locator(LoginLocators.loginButton).click();
+
+    await expect(page.locator(LoginLocators.welcomeMessage)).toContainText('Welcome');
   });
 });
