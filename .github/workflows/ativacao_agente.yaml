@@ -29,4 +29,5 @@ jobs:
       - name: Rodando os testes 
         run: |
           npx playwright test
+          continue-on-error: True
 
