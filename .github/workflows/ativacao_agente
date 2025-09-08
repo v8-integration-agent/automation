@@ -1,0 +1,32 @@
+name: GitHub Actions - Playwright-Report
+run-name: Running - Playwright-Report
+on: [push, workflow_dispatch]
+
+jobs:
+  on-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone do repositório
+        run: |
+          git clone https://github.com/Felipe-Janazi/integration-agent.git
+      
+      - name: Entrando no repositório
+        run: |
+          cd integration-agent
+      
+      - name: npm init
+        run: |
+          npm init -y
+
+      - name: npm i 
+        run: |
+          npm i -D @playwright/test typescript ts-node
+      
+      - name: npm x 
+        run: |
+          npx playwright install --with-deps
+      
+      - name: Rodando os testes 
+        run: |
+          npx playwright test
+
