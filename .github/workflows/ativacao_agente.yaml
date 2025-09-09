@@ -1,33 +1,37 @@
-name: Generate BDD and Tests
-
+name: BDD Test Generation
+ 
 on:
   push:
     branches:
       - api-groq
-
+  pull_request:
+ 
 jobs:
-  build:
+  generate-and-test:
     runs-on: ubuntu-latest
-
+ 
     steps:
-    - name: Check out repository
-      uses: actions/checkout@v2
-
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.x'
-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-
-    - name: Generate BDDs
-      run: python ai/generate_bdd.py
-
-    - name: Generate Tests from BDDs
-      run: python ai/generate_tests_from_bdd.py
-
-    - name: Run Tests
-      run: |
-        echo "Execute os testes aqui, por exemplo, usando pytest"
+      - name: Checkout repo
+        uses: actions/checkout@v3
+ 
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+ 
+      - name: Install dependencies
+        run: |
+          pip install groq pytest pytest-bdd
+ 
+      - name: Generate BDD from criterios.md
+        run: python ai/generate_bdd.py
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+ 
+      - name: Generate Tests from BDD
+        run: python ai/generate_tests_from_bdd.py
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+ 
+      - name: Run Tests
+        run: pytest ai/tests --maxfail=1 --disable-warnings -q
