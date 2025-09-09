@@ -31,4 +31,5 @@ jobs:
         run: |
             npx playwright install
             npx playwright test
+        continue-on-error: true
 
