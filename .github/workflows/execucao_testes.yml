@@ -1,0 +1,19 @@
+name: Execução de testes
+run-name: Running - Execução de testes
+
+on:
+  workflow_run:
+    workflows: [BDD Test Generation]
+    types: [completed]
+    branches: 
+      - main
+      - feat-pipeline-testes
+ 
+jobs:
+  generate-and-test:
+    runs-on: ubuntu-latest
+ 
+    steps:
+      - name: Conexão de pipelines
+        run: |
+            echo "conexão bem sucedida"
