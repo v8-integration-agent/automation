@@ -4,7 +4,7 @@ from groq import Groq
 def generated_analysis():
     client = Groq(api_key=os.getenv("GROQ_API_KEY"))
  
-    with open("../erros.txt", "r", encoding="utf-8") as f:
+    with open("erros.txt", "r", encoding="utf-8") as f:
         erros = f.read()
  
     prompt = f"""
