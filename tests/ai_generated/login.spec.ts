@@ -24,7 +24,7 @@ test.describe('Login no Parabank', () => {
     await page.locator(LoginLocators.loginButton).click();
 
     await expect(page.locator(LoginLocators.errorMessage)).toContainText(
-      'could not be verified'
+     'An internal error has occurred and has been logged.'
     );
   });
 
