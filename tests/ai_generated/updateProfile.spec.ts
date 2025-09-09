@@ -1,4 +1,5 @@
 import { test, expect } from '../helpers/fixtures';
+import * as fs from 'fs';
 
 const HOME = 'https://parabank.parasoft.com/parabank/index.htm';
 
@@ -15,6 +16,15 @@ const updateProfileLocators = {
   botaoSalvar: '//*[@id="updateProfileForm"]/form/table/tbody/tr[8]/td[2]/input',
    phoneError: '//*[@id="phone-error"]'
 };
+
+test.afterEach(async ({}, testInfo) => {
+  if (testInfo.status !== 'passed') {
+    fs.appendFileSync('erros.txt', `${new Date().toISOString()} - ${testInfo.title} falhou\n`);
+    if (testInfo.error) {
+      fs.appendFileSync('erros.txt', `${testInfo.error.message}\n\n`);
+    }
+  }
+});
 
 async function acessarProfile(page) {
   await page.goto(HOME, { waitUntil: 'domcontentloaded' });

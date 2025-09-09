@@ -74,7 +74,7 @@
         {
           "title": "Login no Parabank",
           "file": "ai_generated/login.spec.ts",
-          "line": 18,
+          "line": 29,
           "column": 6,
           "specs": [
             {
@@ -93,12 +93,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 3579,
+                      "duration": 3908,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-09-09T16:53:30.642Z",
+                      "startTime": "2025-09-09T20:44:15.458Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -108,12 +108,12 @@
               ],
               "id": "25d86a52ce6cfe98a75d-2ab723778603941a681c",
               "file": "ai_generated/login.spec.ts",
-              "line": 19,
+              "line": 30,
               "column": 3
             },
             {
               "title": "Login válido",
-              "ok": true,
+              "ok": false,
               "tags": [],
               "tests": [
                 {
@@ -126,23 +126,68 @@
                     {
                       "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 4047,
-                      "errors": [],
+                      "status": "failed",
+                      "duration": 7414,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#leftPanel > p')\nExpected string: \u001b[32m\"Welcome\"\u001b[39m\nReceived: <element(s) not found>\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#leftPanel > p')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#leftPanel > p')\nExpected string: \u001b[32m\"Welcome\"\u001b[39m\nReceived: <element(s) not found>\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#leftPanel > p')\u001b[22m\n\n    at C:\\Users\\marqu\\Downloads\\integration-agent\\tests\\ai_generated\\login.spec.ts:49:62",
+                        "location": {
+                          "file": "C:\\Users\\marqu\\Downloads\\integration-agent\\tests\\ai_generated\\login.spec.ts",
+                          "column": 62,
+                          "line": 49
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 47 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[33mLoginLocators\u001b[39m\u001b[33m.\u001b[39mloginButton)\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m 48 |\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 49 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[33mLoginLocators\u001b[39m\u001b[33m.\u001b[39mwelcomeMessage))\u001b[33m.\u001b[39mtoContainText(\u001b[32m'Welcome'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                              \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 50 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 51 |\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m 52 |\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\marqu\\Downloads\\integration-agent\\tests\\ai_generated\\login.spec.ts",
+                            "column": 62,
+                            "line": 49
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#leftPanel > p')\nExpected string: \u001b[32m\"Welcome\"\u001b[39m\nReceived: <element(s) not found>\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#leftPanel > p')\u001b[22m\n\n\n\u001b[0m \u001b[90m 47 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[33mLoginLocators\u001b[39m\u001b[33m.\u001b[39mloginButton)\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m 48 |\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 49 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[33mLoginLocators\u001b[39m\u001b[33m.\u001b[39mwelcomeMessage))\u001b[33m.\u001b[39mtoContainText(\u001b[32m'Welcome'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                              \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 50 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 51 |\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m 52 |\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\marqu\\Downloads\\integration-agent\\tests\\ai_generated\\login.spec.ts:49:62\u001b[22m"
+                        }
+                      ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-09-09T16:53:35.277Z",
+                      "startTime": "2025-09-09T20:44:19.919Z",
                       "annotations": [],
-                      "attachments": []
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\marqu\\Downloads\\integration-agent\\test-results\\ai_generated-login-Login-no-Parabank-Login-válido-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\marqu\\Downloads\\integration-agent\\test-results\\ai_generated-login-Login-no-Parabank-Login-válido-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\marqu\\Downloads\\integration-agent\\test-results\\ai_generated-login-Login-no-Parabank-Login-válido-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\marqu\\Downloads\\integration-agent\\test-results\\ai_generated-login-Login-no-Parabank-Login-válido-chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\marqu\\Downloads\\integration-agent\\tests\\ai_generated\\login.spec.ts",
+                        "column": 62,
+                        "line": 49
+                      }
                     }
                   ],
-                  "status": "expected"
+                  "status": "unexpected"
                 }
               ],
               "id": "25d86a52ce6cfe98a75d-87de460d0153076d1233",
               "file": "ai_generated/login.spec.ts",
-              "line": 31,
+              "line": 42,
               "column": 3
             }
           ]
@@ -159,12 +204,12 @@
         {
           "title": "Atualização de Telefone",
           "file": "ai_generated/updateProfile.spec.ts",
-          "line": 28,
+          "line": 38,
           "column": 6,
           "specs": [
             {
               "title": "Usuário deve atualizar telefone com sucesso",
-              "ok": true,
+              "ok": false,
               "tags": [],
               "tests": [
                 {
@@ -177,23 +222,60 @@
                     {
                       "workerIndex": 1,
                       "parallelIndex": 1,
-                      "status": "passed",
-                      "duration": 4336,
-                      "errors": [],
+                      "status": "timedOut",
+                      "duration": 60789,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "C:\\Users\\marqu\\Downloads\\integration-agent\\tests\\ai_generated\\updateProfile.spec.ts",
+                            "column": 56,
+                            "line": 34
+                          },
+                          "message": "Error: locator.click: Test timeout of 60000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('//*[@id=\"leftPanel\"]/ul/li[6]/a')\u001b[22m\n\n\n\u001b[0m \u001b[90m 32 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[33mLoginLocators\u001b[39m\u001b[33m.\u001b[39mpasswordInput)\u001b[33m.\u001b[39mfill(\u001b[32m'demo'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 33 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[33mLoginLocators\u001b[39m\u001b[33m.\u001b[39mloginButton)\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 34 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(updateProfileLocators\u001b[33m.\u001b[39mlinkPerfil)\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 35 |\u001b[39m   \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(updateProfileLocators\u001b[33m.\u001b[39minputPhone))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m 36 |\u001b[39m }\n \u001b[90m 37 |\u001b[39m\u001b[0m\n\u001b[2m    at acessarProfile (C:\\Users\\marqu\\Downloads\\integration-agent\\tests\\ai_generated\\updateProfile.spec.ts:34:56)\u001b[22m\n\u001b[2m    at C:\\Users\\marqu\\Downloads\\integration-agent\\tests\\ai_generated\\updateProfile.spec.ts:40:5\u001b[22m"
+                        }
+                      ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-09-09T16:53:30.642Z",
+                      "startTime": "2025-09-09T20:44:15.505Z",
                       "annotations": [],
-                      "attachments": []
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\marqu\\Downloads\\integration-agent\\test-results\\ai_generated-updateProfile-84a1a-alizar-telefone-com-sucesso-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\marqu\\Downloads\\integration-agent\\test-results\\ai_generated-updateProfile-84a1a-alizar-telefone-com-sucesso-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\marqu\\Downloads\\integration-agent\\test-results\\ai_generated-updateProfile-84a1a-alizar-telefone-com-sucesso-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\marqu\\Downloads\\integration-agent\\test-results\\ai_generated-updateProfile-84a1a-alizar-telefone-com-sucesso-chromium\\trace.zip"
+                        }
+                      ]
                     }
                   ],
-                  "status": "expected"
+                  "status": "unexpected"
                 }
               ],
               "id": "dc5e5a7d3a54c6ba8ecf-5e34ae8d0ebc1dbbd98b",
               "file": "ai_generated/updateProfile.spec.ts",
-              "line": 29,
+              "line": 39,
               "column": 3
             },
             {
@@ -209,34 +291,31 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
-                      "status": "failed",
-                      "duration": 9015,
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "timedOut",
+                      "duration": 60965,
                       "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('//*[@id=\"phone-error\"]')\nExpected string: \u001b[32m\"Phone is required.\"\u001b[39m\nReceived: <element(s) not found>\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('//*[@id=\"phone-error\"]')\u001b[22m\n",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('//*[@id=\"phone-error\"]')\nExpected string: \u001b[32m\"Phone is required.\"\u001b[39m\nReceived: <element(s) not found>\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('//*[@id=\"phone-error\"]')\u001b[22m\n\n    at C:\\Users\\marqu\\Downloads\\integration-agent\\tests\\ai_generated\\updateProfile.spec.ts:41:66",
-                        "location": {
-                          "file": "C:\\Users\\marqu\\Downloads\\integration-agent\\tests\\ai_generated\\updateProfile.spec.ts",
-                          "column": 66,
-                          "line": 41
-                        },
-                        "snippet": "\u001b[0m \u001b[90m 39 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mfill(updateProfileLocators\u001b[33m.\u001b[39minputPhone\u001b[33m,\u001b[39m \u001b[32m\"\"\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 40 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mclick(updateProfileLocators\u001b[33m.\u001b[39mbotaoSalvar)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 41 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(updateProfileLocators\u001b[33m.\u001b[39mphoneError))\u001b[33m.\u001b[39mtoContainText(\u001b[32m'Phone is required.'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                  \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 42 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 43 |\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m 44 |\u001b[39m\u001b[0m"
+                        "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
                       },
                       "errors": [
                         {
+                          "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                        },
+                        {
                           "location": {
                             "file": "C:\\Users\\marqu\\Downloads\\integration-agent\\tests\\ai_generated\\updateProfile.spec.ts",
-                            "column": 66,
-                            "line": 41
+                            "column": 56,
+                            "line": 34
                           },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('//*[@id=\"phone-error\"]')\nExpected string: \u001b[32m\"Phone is required.\"\u001b[39m\nReceived: <element(s) not found>\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('//*[@id=\"phone-error\"]')\u001b[22m\n\n\n\u001b[0m \u001b[90m 39 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mfill(updateProfileLocators\u001b[33m.\u001b[39minputPhone\u001b[33m,\u001b[39m \u001b[32m\"\"\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 40 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mclick(updateProfileLocators\u001b[33m.\u001b[39mbotaoSalvar)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 41 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(updateProfileLocators\u001b[33m.\u001b[39mphoneError))\u001b[33m.\u001b[39mtoContainText(\u001b[32m'Phone is required.'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                  \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 42 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 43 |\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m 44 |\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\marqu\\Downloads\\integration-agent\\tests\\ai_generated\\updateProfile.spec.ts:41:66\u001b[22m"
+                          "message": "Error: locator.click: Test timeout of 60000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('//*[@id=\"leftPanel\"]/ul/li[6]/a')\u001b[22m\n\n\n\u001b[0m \u001b[90m 32 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[33mLoginLocators\u001b[39m\u001b[33m.\u001b[39mpasswordInput)\u001b[33m.\u001b[39mfill(\u001b[32m'demo'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 33 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[33mLoginLocators\u001b[39m\u001b[33m.\u001b[39mloginButton)\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 34 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(updateProfileLocators\u001b[33m.\u001b[39mlinkPerfil)\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 35 |\u001b[39m   \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(updateProfileLocators\u001b[33m.\u001b[39minputPhone))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m 36 |\u001b[39m }\n \u001b[90m 37 |\u001b[39m\u001b[0m\n\u001b[2m    at acessarProfile (C:\\Users\\marqu\\Downloads\\integration-agent\\tests\\ai_generated\\updateProfile.spec.ts:34:56)\u001b[22m\n\u001b[2m    at C:\\Users\\marqu\\Downloads\\integration-agent\\tests\\ai_generated\\updateProfile.spec.ts:48:5\u001b[22m"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-09-09T16:53:36.066Z",
+                      "startTime": "2025-09-09T20:45:18.429Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -259,12 +338,7 @@
                           "contentType": "application/zip",
                           "path": "C:\\Users\\marqu\\Downloads\\integration-agent\\test-results\\ai_generated-updateProfile-571c4-ar-telefone-com-campo-vazio-chromium\\trace.zip"
                         }
-                      ],
-                      "errorLocation": {
-                        "file": "C:\\Users\\marqu\\Downloads\\integration-agent\\tests\\ai_generated\\updateProfile.spec.ts",
-                        "column": 66,
-                        "line": 41
-                      }
+                      ]
                     }
                   ],
                   "status": "unexpected"
@@ -272,7 +346,7 @@
               ],
               "id": "dc5e5a7d3a54c6ba8ecf-f234c3c110ffecdbb547",
               "file": "ai_generated/updateProfile.spec.ts",
-              "line": 37,
+              "line": 47,
               "column": 3
             }
           ]
@@ -282,11 +356,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2025-09-09T16:53:29.497Z",
-    "duration": 16016.801,
-    "expected": 3,
+    "startTime": "2025-09-09T20:44:14.209Z",
+    "duration": 127388.39700000001,
+    "expected": 1,
     "skipped": 0,
-    "unexpected": 1,
+    "unexpected": 3,
     "flaky": 0
   }
 }
