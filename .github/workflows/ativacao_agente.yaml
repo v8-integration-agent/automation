@@ -3,9 +3,10 @@ name: BDD Test Generation
 on:
   push:
     branches:
-      - api-groq
+      - feat-pipeline-testes
   pull_request:
   workflow_dispatch:
+  
  
 jobs:
   generate-and-test:

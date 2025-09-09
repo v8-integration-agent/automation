@@ -1,0 +1,13 @@
+name: BDD Test Generation
+ 
+on:
+  workflow_run:
+    workflows: [ BDD Test Generation ]
+ 
+jobs:
+  generate-and-test:
+    runs-on: ubuntu-latest
+ 
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
