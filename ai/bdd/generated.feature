@@ -1,187 +1,126 @@
-## Feature: Cadastro de Usuário  
 ```gherkin
-Feature: Cadastro de Usuário
-  Como novo cliente do ParaBank
-  Quero registrar minha conta
-  Para poder acessar os serviços do banco
+# Feature: ParaBank – Cadastro e Autenticação
+# ------------------------------------------------
 
-  Scenario: Cadastro bem-sucedido com todos os campos preenchidos
-    Given o usuário está na página de cadastro
-    When o usuário preenche os campos obrigatórios com dados válidos
-    And clica em "Criar conta"
-    Then o sistema exibe a mensagem "Cadastro concluído com sucesso"
-    And o usuário passa a poder fazer login
+Scenario: Registro de um novo usuário com campos obrigatórios preenchidos
+  Given o usuário acessa a página de cadastro
+  When ele preenche todos os campos obrigatórios corretamente
+  And clica em “Registrar”
+  Then ele deve ver uma mensagem de confirmação “Cadastro concluído”
+  And o usuário deve ser redirecionado para a tela de login
 
-  Scenario: Tentativa de cadastro com campo obrigatório em branco
-    Given o usuário está na página de cadastro
-    When o usuário deixa o campo "Nome" em branco e preenche os demais campos
-    And clica em "Criar conta"
-    Then o sistema exibe a mensagem de erro "O campo Nome é obrigatório"
+Scenario Outline: Registro de um usuário com campos inválidos
+  Given o usuário acessa a página de cadastro
+  When ele preenche os campos obrigatórios com os seguintes valores: <campo> = "<valor>"
+  And clica em “Registrar”
+  Then o sistema exibe a mensagem de erro “<mensagem>”
 
-  Scenario: Cadastro com telefone inválido
-    Given o usuário está na página de cadastro
-    When o usuário insere "1234" no campo telefone
-    And preenche os demais campos
-    And clica em "Criar conta"
-    Then o sistema exibe a mensagem de erro "Telefone inválido"
+  Examples:
+    | campo   | valor           | mensagem                                  |
+    | Telefone| "12345"         | "Telefone inválido"                       |
+    | CEP     | "abcde"         | "CEP inválido"                            |
+    | Email   | "usuario@"      | "Email inválido"                          |
 
-  Scenario: Cadastro com CEP inválido
-    Given o usuário está na página de cadastro
-    When o usuário insere "ABCDE" no campo CEP
-    And preenche os demais campos
-    And clica em "Criar conta"
-    Then o sistema exibe a mensagem de erro "CEP inválido"
+Scenario: Usuário já cadastrado tenta registrar novamente
+  Given o usuário já existe no banco de dados
+  When ele tenta cadastrar-se com o mesmo e‑mail
+  Then o sistema exibe a mensagem “E‑mail já cadastrado”
 
-  Scenario: Cadastro com e‑mail inválido
-    Given o usuário está na página de cadastro
-    When o usuário insere "usuario@exemplo" no campo e‑mail
-    And preenche os demais campos
-    And clica em "Criar conta"
-    Then o sistema exibe a mensagem de erro "E‑mail inválido"
+# Feature: ParaBank – Login
+# ------------------------------------------------
+
+Scenario: Login com credenciais válidas
+  Given o usuário está na tela de login
+  When ele insere “usuario@exemplo.com” e “senhaCorreta”
+  And clica em “Entrar”
+  Then ele é redirecionado para a página inicial da conta
+  And a tela exibe “Bem‑vindo, <nome do usuário>”
+
+Scenario: Login com credenciais inválidas
+  Given o usuário está na tela de login
+  When ele insere “usuario@exemplo.com” e “senhaErrada”
+  And clica em “Entrar”
+  Then o sistema exibe a mensagem “Usuário ou senha inválidos”
+
+# Feature: ParaBank – Consulta de Saldo e Extrato
+# ------------------------------------------------
+
+Scenario: Visualização do saldo atualizado
+  Given o usuário está logado na conta
+  When ele navega até a tela “Saldo”
+  Then a página exibe o valor “Saldo atual: R$ <saldo>”
+
+Scenario: Visualização do extrato em ordem cronológica
+  Given o usuário tem transações recentes no extrato
+  When ele navega até a tela “Extrato”
+  Then o extrato lista as transações em ordem decrescente de data
+  And cada linha contém “Data, Descrição, Valor, Saldo”
+
+# Feature: ParaBank – Transferência de Fundos
+# ------------------------------------------------
+
+Scenario: Transferência de fundos bem-sucedida
+  Given o usuário está logado e possui saldo de R$ 1.000,00 na conta A
+  When ele seleciona conta de origem “A” e conta de destino “B”
+  And insere o valor “R$ 200,00”
+  And confirma a transferência
+  Then R$ 200,00 é debitado da conta A
+  And R$ 200,00 é creditado na conta B
+  And ambas as contas registram a transação no histórico
+
+Scenario: Transferência com valor maior que o saldo disponível
+  Given o usuário está logado e possui saldo de R$ 100,00 na conta A
+  When ele tenta transferir R$ 200,00
+  Then o sistema exibe a mensagem “Saldo insuficiente”
+
+# Feature: ParaBank – Solicitação de Empréstimo
+# ------------------------------------------------
+
+Scenario: Empréstimo aprovado
+  Given o usuário é logado
+  When ele solicita R$ 10.000,00 de empréstimo com renda anual de R$ 120.000,00
+  Then o sistema retorna “Solicitação Aprovada”
+  And a mensagem é exibida claramente para o usuário
+
+Scenario: Empréstimo negado por renda insuficiente
+  Given o usuário é logado
+  When ele solicita R$ 50.000,00 de empréstimo com renda anual de R$ 30.000,00
+  Then o sistema retorna “Solicitação Negada”
+  And a mensagem indica “Renda anual insuficiente”
+
+# Feature: ParaBank – Pagamento de Contas
+# ------------------------------------------------
+
+Scenario: Registro de pagamento futuro
+  Given o usuário está logado
+  When ele registra um pagamento para “Conta X” com data “2025‑10‑15”
+  And clica em “Confirmar”
+  Then o pagamento é incluído no histórico de transações
+  And o sistema exibe “Pagamento agendado para 15 de outubro de 2025”
+
+Scenario: Pagamento imediato respeita data de agendamento
+  Given o usuário registra um pagamento com data “2025‑10‑15” e confirma
+  When a data atual é 2025‑10‑16
+  Then o pagamento não é executado imediatamente
+  And o sistema informa “Pagamento agendado para 15 de outubro”
+
+# Feature: ParaBank – Navegação e Usabilidade
+# ------------------------------------------------
+
+Scenario: Carregamento correto de todas as páginas
+  Given o usuário navega por todas as páginas principais (Login, Cadastro, Saldo, Extrato, Transferência, Empréstimo, Pagamento)
+  When ele não encontra erros de carregamento
+  Then todas as páginas carregam sem mensagens de erro
+
+Scenario: Mensagens de erro claras e objetivas
+  Given o usuário tenta executar uma ação inválida em qualquer módulo
+  When o sistema responde
+  Then a mensagem de erro é exibida em destaque
+  And descreve exatamente o problema (ex.: “O campo telefone deve conter 10 dígitos”)
+
+Scenario: Consistência de links e menus
+  Given o usuário acessa qualquer página
+  When ele verifica os links de navegação e menus
+  Then os mesmos itens (Login, Cadastro, Saldo, Extrato, Transferência, Empréstimo, Pagamento, Logout) aparecem em todas as páginas
+  And cada link funciona corretamente
 ```
-
-## Feature: Login  
-```gherkin
-Feature: Login
-  Como usuário registrado
-  Quero entrar no ParaBank
-  Para visualizar minha conta
-
-  Scenario: Login com credenciais válidas
-    Given o usuário está na página de login
-    When o usuário insere "usuario123" no campo usuário
-    And insere "senhaSegura" no campo senha
-    And clica em "Entrar"
-    Then o sistema redireciona para a página inicial da conta
-
-  Scenario: Login com senha incorreta
-    Given o usuário está na página de login
-    When o usuário insere "usuario123" no campo usuário
-    And insere "senhaErrada" no campo senha
-    And clica em "Entrar"
-    Then o sistema exibe a mensagem "Credenciais inválidas"
-
-  Scenario: Login com usuário inexistente
-    Given o usuário está na página de login
-    When o usuário insere "naoExiste" no campo usuário
-    And insere "senhaQualquer" no campo senha
-    And clica em "Entrar"
-    Then o sistema exibe a mensagem "Credenciais inválidas"
-```
-
-## Feature: Acesso à Conta – Saldo e Extrato  
-```gherkin
-Feature: Acesso à Conta – Saldo e Extrato
-  Como cliente autenticado
-  Quero ver meu saldo e histórico
-  Para acompanhar minhas finanças
-
-  Scenario: Saldo atualizado após transferência
-    Given o usuário está na página inicial da conta
-    When o usuário realiza uma transferência de R$ 200,00
-    Then o saldo exibido na página inicial reflete a dedução de R$ 200,00
-
-  Scenario: Extrato lista transações recentes em ordem cronológica
-    Given o usuário está na página de extrato
-    When o usuário visualiza as transações
-    Then as transações são listadas do mais recente ao mais antigo
-```
-
-## Feature: Transferência de Fundos  
-```gherkin
-Feature: Transferência de Fundos
-  Como cliente autenticado
-  Quero transferir dinheiro entre minhas contas
-  Para movimentar meus recursos
-
-  Scenario: Transferência bem-sucedida entre contas
-    Given o usuário está na tela de transferência
-    When o usuário seleciona conta de origem "Corrente 123"
-    And seleciona conta de destino "Poupança 456"
-    And insere o valor R$ 150,00
-    And confirma a transferência
-    Then R$ 150,00 é debitado da conta de origem
-    And R$ 150,00 é creditado na conta de destino
-    And a transação aparece no histórico de ambas as contas
-
-  Scenario: Transferência bloqueada por saldo insuficiente
-    Given o usuário tem saldo de R$ 50,00 na conta de origem
-    When o usuário tenta transferir R$ 100,00
-    And confirma a transferência
-    Then o sistema exibe a mensagem "Saldo insuficiente para esta transferência"
-
-  Scenario: Transferência bloqueada por valor superior ao saldo disponível
-    Given o usuário tem saldo de R$ 300,00
-    When o usuário tenta transferir R$ 500,00
-    And confirma a transferência
-    Then o sistema exibe a mensagem "Valor excede saldo disponível"
-```
-
-## Feature: Solicitação de Empréstimo  
-```gherkin
-Feature: Solicitação de Empréstimo
-  Como cliente autenticado
-  Quero solicitar um empréstimo
-  Para financiar meus projetos
-
-  Scenario: Empréstimo aprovado
-    Given o usuário tem renda anual de R$ 80.000,00
-    And o valor solicitado é R$ 20.000,00
-    When o usuário envia a solicitação
-    Then o sistema retorna o status "Aprovado"
-    And exibe a mensagem "Seu empréstimo foi aprovado"
-
-  Scenario: Empréstimo negado por renda insuficiente
-    Given o usuário tem renda anual de R$ 30.000,00
-    And o valor solicitado é R$ 40.000,00
-    When o usuário envia a solicitação
-    Then o sistema retorna o status "Negado"
-    And exibe a mensagem "Empréstimo negado – renda insuficiente"
-```
-
-## Feature: Pagamento de Contas  
-```gherkin
-Feature: Pagamento de Contas
-  Como cliente autenticado
-  Quero registrar pagamentos de contas
-  Para manter meus compromissos em dia
-
-  Scenario: Registro de pagamento imediato
-    Given o usuário está na tela de pagamento de contas
-    When o usuário preenche: beneficiário "Eletrônica S.A.", 
-      endereço "Rua A, 100", cidade "São Paulo", estado "SP", cep "01234-567", telefone "1199999999", 
-      conta de destino "Conta 789", valor R$ 150,00, data "01/12/2025"
-    And confirma o pagamento
-    Then a transação aparece no histórico de pagamentos
-    And o saldo da conta é debitado em R$ 150,00
-
-  Scenario: Pagamento futuro agendado
-    Given o usuário está na tela de pagamento de contas
-    When o usuário agenda um pagamento de R$ 200,00 para a data "15/12/2025"
-    And confirma a agenda
-    Then o sistema exibe a mensagem "Pagamento agendado para 15/12/2025"
-    And o pagamento é incluído no histórico com status "Agendado"
-```
-
-## Feature: Navegação e Usabilidade  
-```gherkin
-Feature: Navegação e Usabilidade
-  Como usuário do ParaBank
-  Quero navegar pelo sistema sem erros
-  Para ter uma experiência consistente
-
-  Scenario: Todas as páginas carregam sem erros
-    Given o usuário navega por todas as páginas do aplicativo
-    Then nenhuma página apresenta erro de carregamento
-    And todas as rotas são válidas
-
-  Scenario: Mensagens de erro exibidas de forma clara
-    When uma ação inválida é realizada
-    Then o sistema exibe uma mensagem de erro objetiva e específica
-
-  Scenario: Links e menus consistentes em todas as páginas
-    Given o usuário está em qualquer página do site
-    Then os menus principais estão presentes e apontam para as mesmas seções
-```
-
-> **Obs.:** Cada cenário pode ser dividido em *Background* para autenticação ou configuração comum, se necessário. Esses exemplos cobrem os principais pontos de aceitação descritos no documento e servem como base para a criação de testes automatizados usando BDD.
