@@ -1,8 +1,8 @@
-name: BDD Test Generation
+name: Execução de testes
  
 on:
   workflow_run:
-    workflows: [ BDD Test Generation ]
+    workflows: [BDD Test Generation]
  
 jobs:
   generate-and-test:
