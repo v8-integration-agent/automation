@@ -5,8 +5,7 @@ on:
   workflow_run:
     workflows: [BDD Test Generation]
     types: [completed]
-    branches: 
-      - main
+    branches:
       - feat-pipeline-testes
  
 jobs:
