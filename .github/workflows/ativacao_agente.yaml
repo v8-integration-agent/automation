@@ -5,6 +5,7 @@ on:
     branches:
       - api-groq
   pull_request:
+  workflow_dispatch:
  
 jobs:
   generate-and-test:
