@@ -12,8 +12,13 @@ jobs:
     runs-on: ubuntu-latest
  
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
+      - name: Clone do repositório
+        run: |
+          git clone https://github.com/Felipe-Janazi/integration-agent.git
+          
+      - name: Entrando no repositório
+        run: |
+          cd integration-agent
 
       - name: Execução testes
         run: |
