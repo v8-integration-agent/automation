@@ -1,7 +1,7 @@
 import os
 from groq import Groq
 
-def analyze_playwright_logs(logs_dir="test-results"):
+def analyze_playwright_logs(logs_dir="test-results/**/error-context.md"):
     """
     Lê automaticamente todos os arquivos de log do Playwright em uma pasta e
     usa a IA para analisar falhas e sugerir correções.
