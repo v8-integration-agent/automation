@@ -23,7 +23,6 @@ jobs:
           
       - name: Instalação de dependências
         run: |
-          npm ci
           npm i -D @playwright/test typescript ts-node
           sudo npx playwright install --with-deps
           
