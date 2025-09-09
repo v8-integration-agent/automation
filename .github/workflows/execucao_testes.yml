@@ -26,16 +26,9 @@ jobs:
         run: |
           npm init -y
           npm i -D @playwright/test typescript ts-node
-          sudo npx playwright install --with-deps
-          
-      - name: Debug Playwright deps
-        run: |
-            node -v
-            npm -v
-            npm ls @playwright/test || true
-            node -e "console.log('resolved:', require.resolve('@playwright/test'))"
 
       - name: Execução de testes
         run: |
+            npx playwright install
             npx playwright test
 
