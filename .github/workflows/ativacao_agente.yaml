@@ -1,3 +1,10 @@
+name: AI BDD & Tests
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
 jobs:
   ai-pipeline:
     runs-on: ubuntu-latest
@@ -27,3 +34,25 @@ jobs:
       - name: Gerar testes
         run: |
           python3 ai/generate_tests.py
+
+      # - name: Clone do repositório
+      #   run: |
+      #     git clone https://github.com/Felipe-Janazi/integration-agent.git
+      
+      # - name: Entrando no repositório
+      #   run: |
+      #     cd integration-agent
+      
+      # - name: Configuração playwright
+      #   run: |
+      #     npm init -y && npm i -D @playwright/test typescript ts-node && npx playwright install --with-deps
+      
+      # - name: Instalação Ollama 
+      #   run: |
+      #     curl -fsSL https://ollama.com/install.sh | sh
+      
+      # - name: Rodando os testes 
+      #   run: |
+      #     npx playwright test
+      #   continue-on-error: True
+
