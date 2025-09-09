@@ -60,8 +60,13 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add ai/analysis/*.txt
-          git commit -m "🤖 Gerando analises e conselhos automáticos [skip ci]" || echo "Nada para commitar"
-          git push
+
+          if ls ai/analysis/*.txt 1> /dev/null 2>&1; then
+            git add ai/analysis/*.txt
+            git commit -m "🤖 Gerando analises e conselhos automáticos [skip ci]" || echo "Nada para commitar"
+            git push
+          else
+            echo "Nenhuma análise gerada, nada para commitar"
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
