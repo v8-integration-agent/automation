@@ -36,3 +36,13 @@ jobs:
       - name: Run Tests
         run: pytest ai/tests --maxfail=1 --disable-warnings -q
         continue-on-error: true
+
+      - name: Commit BDD and tests
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add ai/bdd/*.feature ai/tests/*.py
+          git commit -m "🤖 Gerando BDDs e testes automáticos [skip ci]" || echo "Nada para commitar"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
