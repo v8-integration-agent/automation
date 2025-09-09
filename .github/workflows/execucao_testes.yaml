@@ -1,10 +1,10 @@
-name: Execução de testes
+name: Execucao de testes
 run-name: Running - Execução de testes
 
 on:
   push:
-    branches-ignore: 
-      - main
+    branches: 
+      - feat-pipeline-conexao
   workflow_dispatch:
  
 jobs:

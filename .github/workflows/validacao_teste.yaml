@@ -3,10 +3,10 @@ run-name: Running - Validação de testes
 
 on:
   workflow_run:
-    workflows: [Execução de testes]
+    workflows: [Execucao de testes]
     types: [completed]
-    branches-ignore: 
-      - main
+    branches:
+        - feat-pipeline-conexao
 
 jobs:
   generate-and-test:
