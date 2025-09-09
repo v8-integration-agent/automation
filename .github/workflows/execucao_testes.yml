@@ -19,10 +19,12 @@ jobs:
       - name: Entrando no repositório
         run: |
           cd integration-agent
+          git checkout feat-pipeline-conexao
 
           
       - name: Instalação de dependências
         run: |
+          npm init -y
           npm i -D @playwright/test typescript ts-node
           sudo npx playwright install --with-deps
           
