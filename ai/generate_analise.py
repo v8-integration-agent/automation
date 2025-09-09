@@ -1,7 +1,7 @@
 import os
 from groq import Groq
  
-def analyze_playwright_logs(logs_dir="../test-results"):
+def analyze_playwright_logs(logs_dir="test-results"):
     """
     Lê automaticamente todos os arquivos de log do Playwright em uma pasta e
     usa a IA para analisar falhas e sugerir correções.
@@ -9,12 +9,12 @@ def analyze_playwright_logs(logs_dir="../test-results"):
     client = Groq(api_key=os.getenv("GROQ_API_KEY"))
  
     # Cria pasta para salvar análises
-    os.makedirs("analysis", exist_ok=True)
+    os.makedirs("ai/analysis", exist_ok=True)
  
     # Varre todos os arquivos na pasta de logs
     for root, _, files in os.walk(logs_dir):
         for file in files:
-            if file.endswith((".md")):  # ajuste a extensão se necessário
+            if file.endswith((".txt", ".log", ".json", "md")):  # ajuste a extensão se necessário
                 log_path = os.path.join(root, file)
                 with open(log_path, "r", encoding="utf-8") as f:
                     log_content = f.read()
