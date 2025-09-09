@@ -1,4 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
+import fs from "fs";
 
 export default defineConfig({
   testDir: './tests',
@@ -7,7 +8,7 @@ export default defineConfig({
   reporter: [
     ['list'],
     ['json', { outputFile: 'report.json' }],
-    ['html', { outputFolder: 'playwright-report', open: 'never' }]
+    ['html', { outputFolder: 'playwright-report', open: 'never' }],
   ],
   use: {
     headless: false,

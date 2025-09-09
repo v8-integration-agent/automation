@@ -1,4 +1,5 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, } from '@playwright/test';
+import * as fs from 'fs';
 
 const HOME = 'https://parabank.parasoft.com/parabank/index.htm';
 
@@ -14,6 +15,16 @@ async function openHome(page) {
   await page.goto(HOME, { waitUntil: 'domcontentloaded' });
   await expect(page.locator(LoginLocators.usernameInput)).toBeVisible();
 }
+
+test.afterEach(async ({}, testInfo) => {
+  if (testInfo.status !== 'passed') {
+    fs.appendFileSync('erros.txt', `${new Date().toISOString()} - ${testInfo.title} falhou\n`);
+    if (testInfo.error) {
+      fs.appendFileSync('erros.txt', `${testInfo.error.message}\n\n`);
+    }
+  }
+});
+
 
 test.describe('Login no Parabank', () => {
   test('Login inválido', async ({ page }) => {
