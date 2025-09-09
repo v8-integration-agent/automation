@@ -20,6 +20,13 @@ jobs:
         run: |
           cd integration-agent
 
+      - name: Debug Playwright deps
+        run: |
+          node -v
+          npm -v
+          npm ls @playwright/test || true
+          node -e "console.log('resolved:', require.resolve('@playwright/test'))"
+
       - name: Instalação de dependências
         run: |
             npm ci
