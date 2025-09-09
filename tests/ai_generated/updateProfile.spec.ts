@@ -25,7 +25,7 @@ async function acessarProfile(page) {
   await expect(page.locator(updateProfileLocators.inputPhone)).toBeVisible();
 }
 
-test.describe('Atualização de Telefone', () => {
+
   test('Usuário deve atualizar telefone com sucesso', async ({ page }) => {
     await acessarProfile(page);
     await page.fill(updateProfileLocators.inputPhone, "11999999999");
@@ -40,4 +40,3 @@ test.describe('Atualização de Telefone', () => {
     await page.click(updateProfileLocators.botaoSalvar);
     await expect(page.locator(updateProfileLocators.phoneError)).toContainText('Phone is required.');
   });
-});

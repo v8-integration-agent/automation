@@ -15,15 +15,18 @@ jobs:
       - name: Clone do repositório
         run: |
           git clone https://github.com/Felipe-Janazi/integration-agent.git
-          
+
       - name: Entrando no repositório
         run: |
           cd integration-agent
 
-      - name: Execução testes
+      - name: Instalação de dependências
         run: |
             npm init -y
             npm i -D @playwright/test typescript ts-node
             sudo npx playwright install --with-deps
+            
+      - name: Execução de testes
+        run: |
             npx playwright test
 

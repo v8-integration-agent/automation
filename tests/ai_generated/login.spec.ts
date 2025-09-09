@@ -15,7 +15,7 @@ async function openHome(page) {
   await expect(page.locator(LoginLocators.usernameInput)).toBeVisible();
 }
 
-test.describe('Login no Parabank', () => {
+
   test('Login inválido', async ({ page }) => {
     await openHome(page);
 
@@ -37,4 +37,3 @@ test.describe('Login no Parabank', () => {
 
     await expect(page.locator(LoginLocators.welcomeMessage)).toContainText('Welcome');
   });
-});
