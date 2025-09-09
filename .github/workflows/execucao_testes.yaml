@@ -29,9 +29,11 @@ jobs:
 
       - name: Execução de testes
         run: |
-            npx playwright install
-            npx playwright test > test-results/terminal.log 2>&1
+          mkdir -p test-results
+          npx playwright install
+          npx playwright test > test-results/terminal.log 2>&1
         continue-on-error: true
+
 
       - name: Checkout repo
         uses: actions/checkout@v3
