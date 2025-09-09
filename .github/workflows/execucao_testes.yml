@@ -2,9 +2,10 @@ name: Execução de testes
 run-name: Running - Execução de testes
 
 on:
-  workflow_run:
-    workflows: [BDD Test Generation]
-    types: [completed]
+  push:
+    branches-ignore: 
+      - main
+  workflow_dispatch:
  
 jobs:
   generate-and-test:

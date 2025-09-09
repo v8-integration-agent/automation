@@ -5,7 +5,8 @@ on:
   push:
     branches-ignore: 
       - main
-  workflow_dispatch:
+    paths:
+      - 'ai/requirements/criterios.md'
   
 jobs:
   generate-and-test:
