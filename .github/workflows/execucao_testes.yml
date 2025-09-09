@@ -6,6 +6,9 @@ on:
     workflows: [BDD Test Generation]
     types:
         completed
+    branches: 
+      main
+      feat-pipeline-testes
  
 jobs:
   generate-and-test:
