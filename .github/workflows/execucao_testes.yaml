@@ -25,7 +25,6 @@ jobs:
       - name: Instalação de dependências
         run: |
           npm install --save-dev @types/node
-          npm init -y
           npm i -D @playwright/test typescript ts-node
 
       - name: Execução de testes
