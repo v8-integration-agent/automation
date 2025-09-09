@@ -39,12 +39,6 @@ jobs:
           name: playwright-results
           path: test-results
 
-
-  Analise-de-resposta:
-    runs-on: ubuntu-latest
-    needs: generate-and-test
- 
-    steps:
       - name: Download test results
         uses: actions/download-artifact@v4
         with:
