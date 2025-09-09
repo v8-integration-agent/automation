@@ -2,7 +2,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-criterios_file = Path(sys.argv[1])  # ex: requirements/criterios.md
+criterios_file = Path(requirements/criterios.md)
 output_dir = Path("bdd")
 output_dir.mkdir(exist_ok=True)
 
