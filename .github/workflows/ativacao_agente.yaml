@@ -1,74 +1,49 @@
-name: AI BDD & Tests
-
+name: BDD Test Generation
+ 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - api-groq
+  pull_request:
   workflow_dispatch:
-
+ 
 jobs:
-  ai-pipeline:
+  generate-and-test:
     runs-on: ubuntu-latest
-
-    services:
-      ollama:
-        image: ollama/ollama:latest
-        ports:
-          - 11434:11434
-        options: >-
-          --ipc=host
-
+ 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Esperar Ollama subir
-        run: |
-          sleep 10
-          curl http://localhost:11434/api/tags || (echo "Ollama não respondeu" && exit 1)
-
-      - name: Instalar dependências Python
-        run: |
-          python3 -m venv venv
-          source venv/bin/activate
-          pip install --upgrade pip
-
-      - name: Gerar BDDs a partir dos critérios
-        run: |
-          source venv/bin/activate
-          python3 ai/generate_bdd.py requirements/criterios.md
-
-      - name: Gerar testes a partir dos BDDs
-        run: |
-          source venv/bin/activate
-          python3 ai/generate_tests.py
-
-      - name: Upload dos artefatos (BDD + Testes)
-        uses: actions/upload-artifact@v4
+        uses: actions/checkout@v3
+ 
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          name: bdd-tests
-          path: |
-            bdd/
-            tests/
+          python-version: "3.10"
+ 
+      - name: Install dependencies
+        run: |
+          pip install groq pytest pytest-bdd
+ 
+      - name: Generate BDD from criterios.md
+        run: python ai/generate_bdd.py
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+ 
+      - name: Generate Tests from BDD
+        run: python ai/generate_tests_from_bdd.py
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+ 
+      - name: Run Tests
+        run: pytest ai/tests --maxfail=1 --disable-warnings -q
+        continue-on-error: true
 
-
-      # - name: Clone do repositório
-      #   run: |
-      #     git clone https://github.com/Felipe-Janazi/integration-agent.git
-      
-      # - name: Entrando no repositório
-      #   run: |
-      #     cd integration-agent
-      
-      # - name: Configuração playwright
-      #   run: |
-      #     npm init -y && npm i -D @playwright/test typescript ts-node && npx playwright install --with-deps
-      
-      # - name: Instalação Ollama 
-      #   run: |
-      #     curl -fsSL https://ollama.com/install.sh | sh
-      
-      # - name: Rodando os testes 
-      #   run: |
-      #     npx playwright test
-      #   continue-on-error: True
-
+      - name: Commit BDD and tests
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add ai/bdd/*.feature ai/tests/*.py
+          git commit -m "🤖 Gerando BDDs e testes automáticos [skip ci]" || echo "Nada para commitar"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
