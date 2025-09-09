@@ -4,11 +4,10 @@ run-name: Running - Execução de testes
 on:
   workflow_run:
     workflows: [BDD Test Generation]
-    types:
-        completed
+    types: [completed]
     branches: 
-      main
-      feat-pipeline-testes
+      - main
+      - feat-pipeline-testes
  
 jobs:
   generate-and-test:
