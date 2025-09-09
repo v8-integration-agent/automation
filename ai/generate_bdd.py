@@ -1,30 +1,20 @@
-# ai/generate_bdd.py
-from groq import GroqClient
+import requests
 
-client = GroqClient(os.environ.get("API_GROQ"))
+def get_criterios_de_aceite():
+    with open('requirements/criterios.md', 'r') as file:
+        return file.read()
 
-def generate_bdd(file_path):
-    with open(file_path, "r") as f:
-        criteria = f.read()
+def send_to_groq(criterios):
+    # Supondo que temos uma API do GROQ
+    response = requests.post("https://api.groq.com/generate_bdd", data={"criterios": criterios})
+    return response.json()
 
-    prompt = f"""
-    Transforme os seguintes critérios de aceite em cenários BDD no padrão Gherkin:
-    {criteria}
-    """
+def save_bdds(bdds):
+    with open('ai/bdd/prompts/generated_bdds.txt', 'w') as file:
+        for bdd in bdds:
+            file.write(bdd + '\n')
 
-    response = client.generate(prompt)
-    return response.text
-
-if __name__ == "__main__":
-    import sys
-    import os
-
-    requirements_folder = sys.argv[1]  # ex: 'requirements'
-    bdd_folder = "bdd"
-    os.makedirs(bdd_folder, exist_ok=True)
-
-    for filename in os.listdir(requirements_folder):
-        if filename.endswith(".md"):
-            output = generate_bdd(os.path.join(requirements_folder, filename))
-            with open(os.path.join(bdd_folder, filename.replace(".md", ".feature")), "w") as f:
-                f.write(output)
+criterios = get_criterios_de_aceite()
+bdds = send_to_groq(criterios)
+save_bdds(bdds)
+print("BDDs gerados e salvos com sucesso.")

@@ -1,26 +1,24 @@
-# ai/generate_tests_from_bdd.py
-from groq import GroqClient
-import os
+import requests
 
-client = GroqClient(os.environ.get("API_GROQ"))
+def get_bdds():
+    with open('ai/bdd/prompts/generated_bdds.txt', 'r') as file:
+        return file.readlines()
 
-def generate_test_code(feature_text):
-    prompt = f"""
-    Gere código de teste automatizado (Playwright em JS) baseado no seguinte BDD:
-    {feature_text}
-    """
-    response = client.generate(prompt)
-    return response.text
+def send_bdd_to_groq(bdd):
+    # Supondo que temos uma API do GROQ
+    response = requests.post("https://api.groq.com/generate_tests", data={"bdd": bdd})
+    return response.json()
 
-if __name__ == "__main__":
-    bdd_folder = "bdd"
-    tests_folder = "tests"
-    os.makedirs(tests_folder, exist_ok=True)
+def save_tests(tests):
+    with open('ai/tests/generated_tests.py', 'w') as file:
+        for test in tests:
+            file.write(test + '\n')
 
-    for file in os.listdir(bdd_folder):
-        if file.endswith(".feature"):
-            with open(os.path.join(bdd_folder, file), "r") as f:
-                feature_text = f.read()
-            test_code = generate_test_code(feature_text)
-            with open(os.path.join(tests_folder, file.replace(".feature", ".spec.js")), "w") as f:
-                f.write(test_code)
+bdds = get_bdds()
+all_tests = []
+for bdd in bdds:
+    tests = send_bdd_to_groq(bdd)
+    all_tests.extend(tests)
+
+save_tests(all_tests)
+print("Testes gerados e salvos com sucesso.")
