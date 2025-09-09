@@ -33,12 +33,24 @@ jobs:
             npx playwright test
         continue-on-error: true
 
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: playwright-results
+          path: test-results
+
 
   Analise-de-resposta:
     runs-on: ubuntu-latest
     needs: generate-and-test
  
     steps:
+      - name: Download test results
+        uses: actions/download-artifact@v3
+        with:
+          name: playwright-results
+          path: test-results
+
       - name: Checkout repo
         uses: actions/checkout@v3
  
@@ -60,13 +72,9 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-
-          if ls ai/analysis/*.txt 1> /dev/null 2>&1; then
-            git add ai/analysis/*.txt
-            git commit -m "🤖 Gerando analises e conselhos automáticos [skip ci]" || echo "Nada para commitar"
-            git push
-          else
-            echo "Nenhuma análise gerada, nada para commitar"
-          fi
+          git add ai/analysis/*
+          git commit -m "🤖 Gerando analises e conselhos automáticos [skip ci]" || echo "Nada para commitar"
+          git push
+          
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
