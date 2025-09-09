@@ -18,6 +18,11 @@ jobs:
           curl -fsSL https://ollama.com/install.sh | sh
           ollama pull mistral
 
+      - name: Iniciar Ollama server
+        run: |
+          nohup ollama serve > /tmp/ollama.log 2>&1 &
+          sleep 5
+
       - name: Instalar dependências Python
         run: |
           python3 -m venv venv
