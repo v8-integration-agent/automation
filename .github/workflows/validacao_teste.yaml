@@ -5,6 +5,8 @@ on:
   workflow_run:
     workflows: [Execução de testes]
     types: [completed]
+    branches-ignore: 
+      - main
 
 jobs:
   generate-and-test:
