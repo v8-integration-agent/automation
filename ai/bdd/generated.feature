@@ -1,163 +1,217 @@
 ```gherkin
-# Feature: Cadastro de Usuário
-# O cadastro deve validar campos obrigatórios e formatos específicos.
+# --------------- 1. Cadastro de Usuário ---------------
+Feature: Cadastro de Usuário
+  Como usuário do ParaBank
+  Quero registrar um novo perfil
+  Para poder utilizar os serviços bancários
 
-Scenario: Cadastro bem‑sucedido
-  Given o usuário está na página de cadastro
-  When preenche os campos obrigatórios com dados válidos
-  And confirma o cadastro
-  Then exibe a mensagem de confirmação “Cadastro concluído com sucesso”
-  And habilita o acesso ao login
+  Background:
+    Dado que estou na página de cadastro
 
-Scenario: Tentativa de cadastro com campo obrigatório em branco
-  Given o usuário está na página de cadastro
-  When deixa o campo “Nome” em branco
-  And preenche os demais campos obrigatórios
-  And confirma o cadastro
-  Then exibe a mensagem de erro “Nome é obrigatório”
+  Scenario Outline: Cadastro bem‑sucedido com dados válidos
+    When preencho o formulário com:
+      | Campo          | Valor               |
+      | Nome completo  | <nome>              |
+      | CPF            | <cpf>               |
+      | Telefone       | <telefone>          |
+      | CEP            | <cep>               |
+      | Email          | <email>             |
+      | Senha          | <senha>             |
+      | Confirmação    | <senha>             |
+    And clico em "Cadastrar"
+    Then a mensagem "<mensagem>" deve ser exibida
+    And o usuário deve ser redirecionado para a página de login
 
-Scenario: Cadastro com telefone inválido
-  Given o usuário está na página de cadastro
-  When preenche “Telefone” com “12345”
-  And preenche os demais campos obrigatórios
-  And confirma o cadastro
-  Then exibe a mensagem de erro “Telefone inválido”
+    Examples:
+      | nome            | cpf          | telefone     | cep       | email                | senha     | mensagem                        |
+      | João Silva      | 123.456.789-00 | (11)98765-4321 | 12345-678 | joao@email.com      | Pass123!  | Cadastro realizado com sucesso!|
 
-Scenario: Cadastro com CEP inválido
-  Given o usuário está na página de cadastro
-  When preenche “CEP” com “ABCDE”
-  And preenche os demais campos obrigatórios
-  And confirma o cadastro
-  Then exibe a mensagem de erro “CEP inválido”
+  Scenario Outline: Cadastro falha por campos obrigatórios vazios
+    When preencho o formulário com:
+      | Campo          | Valor |
+      | Nome completo  | <nome> |
+      | CPF            | <cpf> |
+      | Telefone       | <telefone> |
+      | CEP            | <cep> |
+      | Email          | <email> |
+      | Senha          | <senha> |
+      | Confirmação    | <senha> |
+    And clico em "Cadastrar"
+    Then a mensagem "<campo>" deve ser exibida
 
-Scenario: Cadastro com e‑mail inválido
-  Given o usuário está na página de cadastro
-  When preenche “E‑mail” com “usuario@@example.com”
-  And preenche os demais campos obrigatórios
-  And confirma o cadastro
-  Then exibe a mensagem de erro “Endereço de e‑mail inválido”
+    Examples:
+      | nome | cpf | telefone | cep | email | senha | campo                  |
+      |      | 123 | 12345    | 123 | a@b   | Pass123! | "Nome completo é obrigatório" |
+      | João |     | 12345    | 123 | a@b   | Pass123! | "CPF é obrigatório" |
+      | João | 123 |          | 123 | a@b   | Pass123! | "Telefone é obrigatório" |
+      | João | 123 | 12345    |     | a@b   | Pass123! | "CEP é obrigatório" |
+      | João | 123 | 12345    | 123 |       | Pass123! | "Email é obrigatório" |
 
-# Feature: Login
-# O sistema deve autenticar credenciais válidas e rejeitar inválidas.
+  Scenario Outline: Cadastro falha por dados inválidos
+    When preencho o formulário com:
+      | Campo          | Valor |
+      | Nome completo  | <nome> |
+      | CPF            | <cpf> |
+      | Telefone       | <telefone> |
+      | CEP            | <cep> |
+      | Email          | <email> |
+      | Senha          | <senha> |
+      | Confirmação    | <senha> |
+    And clico em "Cadastrar"
+    Then a mensagem "<mensagem>" deve ser exibida
 
-Scenario: Login bem‑sucedido
-  Given o usuário tem credenciais válidas
-  When abre a página de login
-  And insere “usuario@exemplo.com” no campo de e‑mail
-  And insere “SenhaSegura123” no campo de senha
-  And clica em “Entrar”
-  Then redireciona para a página inicial da conta
-  And exibe o nome do usuário no cabeçalho
+    Examples:
+      | nome | cpf           | telefone          | cep      | email                | senha   | mensagem                          |
+      | João | 123.456.789-99 | (11)98765-4321 | 12345-678 | joao@email.com      | Pass123! | "CPF inválido" |
+      | João | 123.456.789-00 | 12345-6789     | 12345-678 | joao@email.com      | Pass123! | "Telefone inválido" |
+      | João | 123.456.789-00 | (11)98765-4321 | 12345-678 | joaoemail.com       | Pass123! | "Email inválido" |
 
-Scenario: Login com credenciais inválidas
-  Given o usuário tem credenciais inválidas
-  When abre a página de login
-  And insere “usuario@exemplo.com” no campo de e‑mail
-  And insere “SenhaIncorreta” no campo de senha
-  And clica em “Entrar”
-  Then exibe a mensagem de erro “Credenciais inválidas”
 
-# Feature: Acesso à conta (Saldo e Extrato)
-# O saldo deve ser atualizado e o extrato em ordem cronológica.
+# --------------- 2. Login ---------------
+Feature: Login
+  Como usuário já cadastrado
+  Quero acessar minha conta
+  Para visualizar saldo e fazer operações
 
-Scenario: Exibição de saldo atualizado após depósito
-  Given o usuário tem saldo de R$ 1.000,00
-  And realizou um depósito de R$ 500,00
-  When acessa a página da conta
-  Then o saldo exibido é “R$ 1.500,00”
+  Background:
+    Dado que estou na página de login
 
-Scenario: Listagem de extrato em ordem cronológica
-  Given o usuário tem as seguintes transações:
-    | Data       | Tipo      | Valor |
-    | 2024‑01‑01 | Depósito  | 200   |
-    | 2024‑01‑10 | Saque     | 50    |
-    | 2024‑01‑15 | Transferência | 100 |
-  When acessa a página de extrato
-  Then o extrato lista as transações em ordem crescente de data
+  Scenario: Login bem‑sucedido com credenciais válidas
+    When insero "joao@email.com" no campo Email
+    And insero "Pass123!" no campo Senha
+    And clico em "Entrar"
+    Then a página inicial da conta deve ser exibida
+    And o nome "João Silva" deve aparecer na barra de navegação
 
-# Feature: Transferência de Fundos
-# O sistema deve validar saldo e registrar transação.
+  Scenario: Login falha com credenciais inválidas
+    When insero "joao@email.com" no campo Email
+    And insero "Err0r!" no campo Senha
+    And clico em "Entrar"
+    Then a mensagem "Usuário ou senha inválidos" deve ser exibida
 
-Scenario: Transferência bem‑sucedida
-  Given o usuário possui R$ 1.000,00 na conta origem
-  When seleciona a conta origem “Conta A”
-  And seleciona a conta destino “Conta B”
-  And insere o valor “200,00”
-  And confirma a transferência
-  Then debita R$ 200,00 da Conta A
-  And credita R$ 200,00 na Conta B
-  And registra a transação no extrato de ambas as contas
+# --------------- 3. Acesso a Saldo e Extrato ---------------
+Feature: Acesso à conta (Saldo e Extrato)
+  Como usuário logado
+  Quero ver meu saldo atualizado
+  E ver o extrato em ordem cronológica
 
-Scenario: Transferência com valor superior ao saldo
-  Given o usuário possui R$ 100,00 na conta origem
-  When tenta transferir “200,00”
-  Then exibe a mensagem de erro “Saldo insuficiente”
+  Background:
+    Dado que estou na página inicial da conta
 
-Scenario: Transferência sem informar valor
-  Given o usuário possui saldo suficiente
-  When seleciona contas de origem e destino
-  And deixa o campo “Valor” em branco
-  And tenta confirmar a transferência
-  Then exibe a mensagem de erro “O campo Valor é obrigatório”
+  Scenario: Visualizar saldo atualizado
+    Then o saldo exibido deve ser igual ao valor real da conta
 
-# Feature: Solicitação de Empréstimo
-# O sistema retorna status aprovado ou negado baseado na renda.
+  Scenario: Extrato lista transações recentes em ordem cronológica
+    When navego até a página de "Extrato"
+    Then as transações devem estar listadas em ordem decrescente de data
 
-Scenario: Empréstimo aprovado
-  Given o usuário possui renda anual de R$ 80.000,00
-  When solicita empréstimo de R$ 10.000,00
-  And confirma a solicitação
-  Then exibe a mensagem “Empréstimo aprovado”
-  And registra a solicitação no histórico
+# --------------- 4. Transferência de Fundos ---------------
+Feature: Transferência de Fundos
+  Como usuário logado
+  Quero transferir valores entre contas
+  Para movimentar meus recursos
 
-Scenario: Empréstimo negado por renda insuficiente
-  Given o usuário possui renda anual de R$ 20.000,00
-  When solicita empréstimo de R$ 10.000,00
-  And confirma a solicitação
-  Then exibe a mensagem “Empréstimo negado”
+  Background:
+    Dado que estou na página de Transferência
 
-# Feature: Pagamento de Contas
-# O pagamento deve ser registrado e respeitar data de agendamento.
+  Scenario Outline: Transferência bem‑sucedida
+    When seleciono a conta de origem "<origem>"
+    And seleciono a conta de destino "<destino>"
+    And informo o valor "<valor>"
+    And confirmo a transferência
+    Then o saldo da conta "<origem>" deve diminuir em "<valor>"
+    And o saldo da conta "<destino>" deve aumentar em "<valor>"
+    And a transação deve aparecer no histórico das duas contas
 
-Scenario: Pagamento imediato bem‑sucedido
-  Given o usuário possui saldo de R$ 1.000,00
-  When registra pagamento com:
-    | Beneficiário | Endereço | Cidade | Estado | CEP | Telefone | Conta | Valor | Data   |
-    | João Silva   | Rua X    | SP     | SP     | 12345-678 | (11) 91234‑5678 | Conta C | 300 | 2024‑02‑01 |
-  And confirma o pagamento
-  Then débita R$ 300,00 da conta
-  And registra a transação no extrato
+    Examples:
+      | origem | destino | valor |
+      | Conta A | Conta B | 100   |
+      | Conta B | Conta C | 50    |
 
-Scenario: Pagamento agendado para data futura
-  Given o usuário possui saldo suficiente
-  When registra pagamento com data “2024‑12‑25”
-  And confirma o pagamento
-  Then exibe a mensagem “Pagamento agendado para 2024‑12‑25”
-  And não debita o saldo imediatamente
-  And registra a transação no histórico de pagamentos agendados
+  Scenario: Transferência não permitida por saldo insuficiente
+    When seleciono a conta de origem "Conta A"
+    And seleciono a conta de destino "Conta B"
+    And informo o valor "1000"
+    And confirmo a transferência
+    Then a mensagem "Saldo insuficiente" deve ser exibida
 
-Scenario: Pagamento com telefone inválido
-  Given o usuário possui saldo suficiente
-  When registra pagamento com telefone “123”
-  And confirma o pagamento
-  Then exibe a mensagem de erro “Telefone inválido”
+# --------------- 5. Solicitação de Empréstimo ---------------
+Feature: Solicitação de Empréstimo
+  Como usuário logado
+  Quero solicitar um empréstimo
+  Para financiar projetos
 
-# Feature: Requisitos Gerais de Navegação e Usabilidade
-# As páginas devem carregar corretamente e os menus devem ser consistentes.
+  Background:
+    Dado que estou na página de Empréstimos
 
-Scenario: Todas as páginas carregam sem erros de navegação
-  Given o usuário está autenticado
-  When navega por todas as páginas disponíveis (Login, Cadastro, Conta, Transferência, Empréstimo, Pagamento)
-  Then nenhuma página apresenta erro de carregamento
+  Scenario Outline: Empréstimo aprovado
+    When informo o valor do empréstimo "<valor>"
+    And informo a renda anual "<renda>"
+    And submeta a solicitação
+    Then o status "<status>" deve ser exibido
 
-Scenario: Mensagens de erro claras e objetivas
-  Given o usuário tenta uma operação inválida (ex.: transferência sem valor)
-  When confirma a operação
-  Then a mensagem exibida contém apenas informação necessária para correção
+    Examples:
+      | valor | renda | status   |
+      | 5000  | 80000 | "Aprovado"|
+      | 12000 | 95000 | "Aprovado"|
 
-Scenario: Menus e links consistentes em todas as páginas
-  Given o usuário navega entre as páginas
-  When inspeciona os menus de navegação
-  Then todos os links aparecem em todas as páginas
-  And a estrutura de navegação permanece a mesma
+  Scenario Outline: Empréstimo negado
+    When informo o valor do empréstimo "<valor>"
+    And informo a renda anual "<renda>"
+    And submeta a solicitação
+    Then o status "<status>" deve ser exibido
+
+    Examples:
+      | valor | renda | status   |
+      | 20000 | 30000 | "Negado" |
+      | 15000 | 40000 | "Negado" |
+
+# --------------- 6. Pagamento de Contas ---------------
+Feature: Pagamento de Contas
+  Como usuário logado
+  Quero registrar pagamentos
+  Para manter meus compromissos em dia
+
+  Background:
+    Dado que estou na página de Pagamentos
+
+  Scenario Outline: Pagamento futuro agendado
+    When informo:
+      | Beneficiário | Endereço  | Cidade   | Estado | CEP     | Telefone      | Conta destino | Valor | Data       |
+      | <benef>      | Rua X, 1  | São Paulo| SP     | 01001-000 | (11)1111-2222 | Conta C        | <valor> | <data>     |
+    And submeta o pagamento
+    Then a mensagem "Pagamento agendado para <data>" deve ser exibida
+    And o pagamento deve aparecer no histórico na data correta
+
+    Examples:
+      | benef         | valor | data       |
+      | Conta de luz  | 150   | 2025-12-01 |
+      | Internet      | 80    | 2025-12-03 |
+
+  Scenario: Pagamento imediato
+    When informo:
+      | Beneficiário | Endereço  | Cidade   | Estado | CEP     | Telefone      | Conta destino | Valor | Data       |
+      | Conta de água | Rua Y, 5 | Rio de Janeiro | RJ | 20001-000 | (21)3333-4444 | Conta D        | 90    | 2025-11-15 |
+    And submeta o pagamento
+    Then o pagamento deve aparecer imediatamente no histórico
+    And o saldo da conta deve ser debitado em "<valor>"
+
+# --------------- 7. Requisitos Gerais de Navegação e Usabilidade ---------------
+Feature: Navegação e Usabilidade
+  Como usuário
+  Quero que a aplicação carregue sem erros
+  E que todas as mensagens de erro sejam claras
+
+  Scenario: Todas as páginas carregam corretamente
+    When navego para cada página (Login, Cadastro, Conta, Transferência, Empréstimo, Pagamento)
+    Then nenhuma página deve apresentar erro 500 ou erro de carregamento
+
+  Scenario: Links e menus consistentes
+    When verifico os menus de navegação
+    Then todos os itens devem estar presentes em todas as páginas
+
+  Scenario: Mensagens de erro claras
+    When provoque um erro (por exemplo, login inválido)
+    Then a mensagem exibida deve conter linguagem clara e instruções de correção
+
 ```
