@@ -9,7 +9,7 @@ def analyze_playwright_logs(logs_dir="../test-results"):
     client = Groq(api_key=os.getenv("GROQ_API_KEY"))
  
     # Cria pasta para salvar análises
-    os.makedirs("ai/analysis", exist_ok=True)
+    os.makedirs("analysis", exist_ok=True)
  
     # Varre todos os arquivos na pasta de logs
     for root, _, files in os.walk(logs_dir):
