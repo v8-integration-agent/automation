@@ -2,8 +2,6 @@ name: BDD Test Generation
  
 on:
   push:
-    branches:
-      - feat-pipeline-testes
   pull_request:
   workflow_dispatch:
   
