@@ -3,8 +3,6 @@ name: CI BDD
 
 on:
   push:
-    branches:
-      - main
   pull_request:
 
 jobs:
