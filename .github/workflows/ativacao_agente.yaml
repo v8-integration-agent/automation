@@ -3,6 +3,8 @@ name: CI BDD
 
 on:
   push:
+    branches: 
+      - api-groq
   pull_request:
 
 jobs:
