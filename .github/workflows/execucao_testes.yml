@@ -1,8 +1,9 @@
 name: Execução de testes
- 
+run-name: Running - Execução de testes
+
 on:
   workflow_run:
-    workflows: [ BDD Test Generation]
+    workflows: [BDD Test Generation]
     types:
         completed
  

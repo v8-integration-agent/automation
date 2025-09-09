@@ -1,11 +1,11 @@
 name: BDD Test Generation
- 
+run-name: Running - Workflow BDD Test Generation
+
 on:
   push:
   pull_request:
   workflow_dispatch:
   
- 
 jobs:
   generate-and-test:
     runs-on: ubuntu-latest
