@@ -33,3 +33,35 @@ jobs:
             npx playwright test
         continue-on-error: true
 
+
+  Analise-de-resposta:
+    runs-on: ubuntu-latest
+    needs: generate-and-test
+ 
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+ 
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+ 
+      - name: Install dependencies
+        run: |
+          pip install groq pytest pytest-bdd
+ 
+      - name: Generate analises
+        run: python ai/generate_analise.py
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+
+      - name: Commit analises
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add ai/bdd/*.feature ai/tests/*.py
+          git commit -m "🤖 Gerando analises e conselhos automáticos [skip ci]" || echo "Nada para commitar"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
