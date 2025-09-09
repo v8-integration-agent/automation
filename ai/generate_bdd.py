@@ -1,29 +1,30 @@
-import subprocess
-import sys
-from pathlib import Path
+# ai/generate_bdd.py
+from groq import GroqClient
 
-criterios_file = Path("ai/requirements/criterios.md")
-output_dir = Path("bdd")
-output_dir.mkdir(exist_ok=True)
+client = GroqClient(os.environ.get("API_GROQ"))
 
-with open(criterios_file, "r", encoding="utf-8") as f:
-    criterios = f.read()
+def generate_bdd(file_path):
+    with open(file_path, "r") as f:
+        criteria = f.read()
 
-prompt = f"""
-Você é um especialista em QA.
-Com base nos critérios de aceite abaixo, gere cenários de BDD em formato Gherkin (.feature):
+    prompt = f"""
+    Transforme os seguintes critérios de aceite em cenários BDD no padrão Gherkin:
+    {criteria}
+    """
 
-{criterios}
-"""
+    response = client.generate(prompt)
+    return response.text
 
-result = subprocess.run(
-    ["ollama", "run", "mistral"],
-    input=prompt.encode("utf-8"),
-    capture_output=True
-)
+if __name__ == "__main__":
+    import sys
+    import os
 
-output_file = output_dir / "scenarios.feature"
-with open(output_file, "wb") as f:
-    f.write(result.stdout)
+    requirements_folder = sys.argv[1]  # ex: 'requirements'
+    bdd_folder = "bdd"
+    os.makedirs(bdd_folder, exist_ok=True)
 
-print(f"BDD gerado em {output_file}")
+    for filename in os.listdir(requirements_folder):
+        if filename.endswith(".md"):
+            output = generate_bdd(os.path.join(requirements_folder, filename))
+            with open(os.path.join(bdd_folder, filename.replace(".md", ".feature")), "w") as f:
+                f.write(output)
