@@ -24,6 +24,7 @@ jobs:
           
       - name: Instalação de dependências
         run: |
+          npm install --save-dev @types/node
           npm init -y
           npm i -D @playwright/test typescript ts-node
 
@@ -50,7 +51,6 @@ jobs:
       - name: Listar resultados dos testes
         run: ls -R test-results || echo "Nenhum arquivo encontrado"
 
- 
       - name: Generate analises
         run: python ai/generate_analise.py
         env:
