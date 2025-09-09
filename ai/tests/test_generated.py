@@ -1,392 +1,333 @@
-Below is a **complete skeleton** that you can drop into a fresh repository and run with `pytest`.  
-It contains:
+## 1.  Visão geral
 
-1. **Feature files** – one per feature (the Gherkin you provided).  
-2. **Step‑definition modules** – one module per feature that implements all of the steps.  
-3. **A small fixture layer** (Selenium WebDriver, Page‑Object stubs) that can be extended to interact with your actual UI.  
+- **Ferramenta**: `pytest‑bdd` (que combina o `pytest` com a sintaxe Gherkin).  
+- **Estrutura**:
+  ```
+  /project
+  ├── features/
+  │   ├── cadastro_de_usuario.feature
+  │   ├── login.feature
+  │   ├── acesso_a_conta.feature
+  │   ├── transferencia_fundos.feature
+  │   ├── solicitacao_emprestimo.feature
+  │   ├── pagamento_de_contas.feature
+  │   └── navegacao_uso.feature
+  ├── tests/
+  │   ├── conftest.py          # fixtures globais (driver, fixtures de banco, etc.)
+  │   ├── steps/
+  │   │   └── common_steps.py # step‑definitions compartilhadas
+  │   └── test_features.py    # arquivo de cenários que chama os *.feature
+  ├── page_objects/
+  │   ├── base_page.py
+  │   ├── cadastro_page.py
+  │   ├── login_page.py
+  │   └── ...                  # outras páginas
+  └── requirements.txt
+  ```
 
-> ⚠️ **Tip** – the code below only contains *place‑holders*.  
-> Replace the `pass` / `raise NotImplementedError` blocks with real Selenium or API calls as needed.
-
----
-
-## 1️⃣ Project layout
-
-```
-paraBank-tests/
-├─ conftest.py
-├─ features/
-│  ├─ cadastro.feature
-│  ├─ login.feature
-│  ├─ saldo_extrato.feature
-│  ├─ transferencia.feature
-│  ├─ emprestimo.feature
-│  ├─ pagamento.feature
-│  └─ usabilidade.feature
-└─ steps/
-   ├─ cadastro_steps.py
-   ├─ login_steps.py
-   ├─ saldo_extrato_steps.py
-   ├─ transferencia_steps.py
-   ├─ emprestimo_steps.py
-   ├─ pagamento_steps.py
-   └─ usabilidade_steps.py
-```
-
-Run the whole test suite with:
-
-```bash
-pip install -r requirements.txt   # see below
-pytest
-```
+> **Obs.** O exemplo abaixo usa **Selenium** como driver Web, mas você pode trocar por Playwright, Cypress‑Python, ou até um mock de API, dependendo da sua aplicação.  
 
 ---
 
-## 2️⃣ Requirements (`requirements.txt`)
+## 2.  `requirements.txt`
 
-```text
-pytest
-pytest-bdd
-selenium
-webdriver-manager
+```txt
+pytest>=6
+pytest-bdd>=3
+selenium>=4
+webdriver-manager>=3
 ```
 
-> **NOTE** – if you prefer API‑level testing, drop the selenium imports and use `requests` instead.
+> Se preferir outro driver, ajuste o import e a criação do driver.
 
 ---
 
-## 3️⃣ Selenium fixture (`conftest.py`)
+## 3.  Feature Files
+
+Crie um arquivo para cada *Feature* (o conteúdo abaixo já está pronto).  
+Por convenção, usamos a codificação UTF‑8 e a extensão `.feature`.
+
+### `features/cadastro_de_usuario.feature`
+
+```gherkin
+# Feature: Cadastro de Usuário
+Feature: Cadastro de Usuário
+
+  Scenario: Cadastros completos são aceitos
+    Given o usuário está na página de cadastro
+    When ele preenche todos os campos obrigatórios com dados válidos
+    And clica no botão “Registrar”
+    Then o sistema exibe a mensagem “Cadastro concluído com sucesso”
+    And o usuário aparece autenticado na página de login
+
+  Scenario Outline: Dados inválidos bloqueiam o cadastro
+    Given o usuário está na página de cadastro
+    When ele preenche os campos obrigatórios com "<campo>" inválido
+    And clica em “Registrar”
+    Then o sistema exibe a mensagem de erro correspondente ao "<campo>"
+    And nenhum dado é salvo no banco
+
+    Examples:
+      | campo   |
+      | telefone|
+      | CEP      |
+      | email    |
+
+  Scenario: Campos obrigatórios não preenchidos impedem o cadastro
+    Given o usuário está na página de cadastro
+    When ele deixa o campo “Nome” em branco
+    And clica em “Registrar”
+    Then o sistema exibe a mensagem “Nome é obrigatório”
+```
+
+*(Faça o mesmo para os demais features – basta copiar o texto acima nas respectivas pastas.)*
+
+---
+
+## 4.  Fixtures (`tests/conftest.py`)
 
 ```python
-# conftest.py
 import pytest
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
+from page_objects.base_page import BasePage
 
+# ----------------------------------------------------------------------
+# Driver (Chrome em modo headless)
+# ----------------------------------------------------------------------
 @pytest.fixture(scope="session")
 def driver():
-    """A single WebDriver instance for the whole test session."""
     options = webdriver.ChromeOptions()
-    options.add_argument("--headless")          # run head‑less by default
+    options.add_argument("--headless")
+    options.add_argument("--disable-gpu")
     options.add_argument("--window-size=1920,1080")
     driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
     driver.implicitly_wait(5)
     yield driver
     driver.quit()
 
+# ----------------------------------------------------------------------
+# Página principal (usada por quase todos os passos)
+# ----------------------------------------------------------------------
 @pytest.fixture
-def login_page(driver):
-    """Page Object stub – replace with real implementation."""
-    from pages.login_page import LoginPage
-    return LoginPage(driver)
-
-@pytest.fixture
-def cadastro_page(driver):
-    from pages.cadastro_page import CadastroPage
-    return CadastroPage(driver)
-
-# ... add other page objects as needed
+def base_page(driver):
+    return BasePage(driver)
 ```
 
-> **Page Objects** – create minimal stub classes in `pages/`.  
-> E.g. `pages/login_page.py`:
-
-```python
-# pages/login_page.py
-class LoginPage:
-    def __init__(self, driver): self.driver = driver
-
-    def go_to(self):
-        self.driver.get("https://parabank.com/login")
-
-    def fill_email(self, email): pass
-    def fill_password(self, pwd): pass
-    def click_login(self): pass
-    def is_at_home(self): return True
-    # add more helper methods as needed
-```
+> **Obs.** Se sua aplicação for um API (sem UI), troque `driver` por um cliente HTTP (por ex.: `requests.Session()`).
 
 ---
 
-## 4️⃣ Feature files
+## 5.  Page Objects (exemplo mínimo)
 
-> **Only the first two features are shown in full** – copy the same style for the rest.
-
-### `features/cadastro.feature`
-
-```gherkin
-Feature: Cadastro de Usuário
-  Como novo cliente do ParaBank
-  Quero me cadastrar preenchendo todos os campos obrigatórios
-  Para poder usar o sistema
-
-  Background:
-    Dado que eu esteja na página “Criar Conta”
-
-  Scenario: Cadastro completo e válido
-    When eu preencho “Nome” com “Ana Silva”
-    And eu preencho “CPF” com “123.456.789-00”
-    And eu preencho “Telefone” com “(11) 91234-5678”
-    And eu preencho “CEP” com “01001-000”
-    And eu preencho “Email” com “ana.silva@example.com”
-    And eu preencho “Senha” com “SenhaSegura123”
-    And eu preencho “Confirmar Senha” com “SenhaSegura123”
-    And eu clico em “Criar Conta”
-    Then eu devo ver a mensagem “Cadastro concluído com sucesso!”
-    And eu devo ser redirecionado para a tela de login
-
-  Scenario Outline: Validação de campos inválidos
-    When eu preencho “Telefone” com "<telefone>"
-    And eu preencho “CEP” com "<cep>"
-    And eu preencho “Email” com "<email>"
-    And eu clico em “Criar Conta”
-    Then eu devo ver a mensagem "<mensagem>"
-
-    Examples:
-      | telefone           | cep      | email                    | mensagem                                |
-      | 1234               | 01001-000| ana.silva@example.com    | Telefone inválido, digite um telefone 11 dígitos |
-      | (11) 91234-5678    | 01       | ana.silva@example.com    | CEP inválido, digite um CEP no formato 5-4 |
-      | (11) 91234-5678    | 01001-000| ana.silvaexample.com     | E‑mail inválido, digite um e‑mail válido |
-
-  Scenario: Tentativa de cadastro com campo obrigatório em branco
-    When eu deixo o campo “Nome” vazio
-    And eu preencho os demais campos corretamente
-    And eu clico em “Criar Conta”
-    Then eu devo ver a mensagem “Nome é obrigatório”
-
-  Scenario: Cadastro com email já existente
-    Given que “email.exemplo@example.com” já está cadastrado
-    When eu preencho “Email” com “email.exemplo@example.com”
-    And eu preencho todos os outros campos corretamente
-    And eu clico em “Criar Conta”
-    Then eu devo ver a mensagem “E‑mail já cadastrado”
-```
-
-### `features/login.feature`
-
-```gherkin
-Feature: Login
-  Como usuário registrado
-  Quero fazer login com credenciais válidas
-  Para acessar minha conta
-
-  Background:
-    Dado que o usuário “usuario1” esteja cadastrado com senha “Senha123”
-
-  Scenario: Login bem‑sucedido
-    When eu preencho “E‑mail” com “usuario1@example.com”
-    And eu preencho “Senha” com “Senha123”
-    And eu clico em “Entrar”
-    Then eu devo ser redirecionado para a página inicial da conta
-    And eu devo ver “Bem‑vindo, usuario1”
-
-  Scenario: Login com senha incorreta
-    When eu preencho “E‑mail” com “usuario1@example.com”
-    And eu preencho “Senha” com “SenhaErrada”
-    And eu clico em “Entrar”
-    Then eu devo ver a mensagem “Credenciais inválidas. Por favor, tente novamente.”
-
-  Scenario: Login com e‑mail inexistente
-    When eu preencho “E‑mail” com “naoexiste@example.com”
-    And eu preencho “Senha” com “Senha123”
-    And eu clico em “Entrar”
-    Then eu devo ver a mensagem “Credenciais inválidas. Por favor, tente novamente.”
-```
-
-> **Repeat** the same style for the remaining feature files (saldo_extrato, transferencia, emprestimo, pagamento, usabilidade).
-
----
-
-## 5️⃣ Step‑definition modules
-
-Each module starts with the decorator `@scenario` that links the feature file to the function.  
-The functions are *empty* – they only map the Gherkin steps to Python functions.  
-Implement the real logic inside the body (`pass` ➜ replace with Selenium actions).
-
-### `steps/cadastro_steps.py`
+### `page_objects/base_page.py`
 
 ```python
-# steps/cadastro_steps.py
-import pytest
-from pytest_bdd import scenarios, given, when, then, parsers
-
-# Load all scenarios from the feature file
-scenarios('../../features/cadastro.feature')
-
-# ---------- Background steps --------------------------------------------
-
-@given(parsers.parse('que eu esteja na página “{pagina}”'))
-def open_page(driver, pagina):
-    """Open the specified page (e.g., Criar Conta)."""
-    # Example: navigate to the 'Criar Conta' page
-    driver.get("https://parabank.com/create-account")
-    # In a real implementation you may want to assert that the page has loaded
-    pass
-
-# ---------- Step implementations ----------------------------------------
-
-@when(parsers.parse('eu preencho “{campo}” com “{valor}”'))
-def fill_field(cadastro_page, campo, valor):
-    """Fill a field on the registration form."""
-    cadastro_page.fill_field(campo, valor)   # implement in CadastroPage
-    pass
-
-@when('eu preencho os demais campos corretamente')
-def fill_other_fields(cadastro_page):
-    """Fill all mandatory fields with valid dummy data."""
-    cadastro_page.fill_valid_data()
-    pass
-
-@when('eu deixo o campo “Nome” vazio')
-def leave_nome_empty(cadastro_page):
-    cadastro_page.clear_field('Nome')
-    pass
-
-@when('eu clico em “Criar Conta”')
-def click_create_account(cadastro_page):
-    cadastro_page.click_create()
-    pass
-
-@then(parsers.parse('eu devo ver a mensagem “{mensagem}”'))
-def verify_message(cadastro_page, mensagem):
-    assert cadastro_page.get_message() == mensagem
-    pass
-
-@then('eu devo ser redirecionado para a tela de login')
-def verify_redirect_to_login(cadastro_page):
-    assert cadastro_page.is_on_login_page()
-    pass
-
-@when(parsers.parse('que “{email}” já está cadastrado'))
-def ensure_email_exists(driver, email):
-    """Pre‑condition – create the user if not already present."""
-    # e.g. call the API or use the UI to register the email
-    # For the test we simply note that the email is already registered
-    pass
-```
-
-> **Explanation** –  
-> * `parsers.parse()` allows you to capture the quoted text directly.  
-> * The same pattern applies to all the other features.
-
-### `steps/login_steps.py`
-
-```python
-# steps/login_steps.py
-import pytest
-from pytest_bdd import scenarios, given, when, then, parsers
-
-scenarios('../../features/login.feature')
-
-@given(parsers.parse('o usuário “{usuario}” esteja cadastrado com senha “{senha}”'))
-def ensure_user_exists(driver, usuario, senha):
-    """Pre‑condition – create the user if it doesn't exist."""
-    # Call your API or use the UI to create the user
-    pass
-
-@when(parsers.parse('eu preencho “{campo}” com “{valor}”'))
-def login_fill_field(login_page, campo, valor):
-    if campo == 'E‑mail':
-        login_page.fill_email(valor)
-    elif campo == 'Senha':
-        login_page.fill_password(valor)
-
-@when('eu clico em “Entrar”')
-def login_click_enter(login_page):
-    login_page.click_login()
-
-@then(parsers.parse('eu devo ser redirecionado para a página inicial da conta'))
-def verify_login_success(login_page):
-    assert login_page.is_at_home()
-
-@then(parsers.parse('eu devo ver “{texto}”'))
-def verify_text_on_home(login_page, texto):
-    assert login_page.contains_text(texto)
-
-@then(parsers.parse('eu devo ver a mensagem “{mensagem}”'))
-def verify_login_error(login_page, mensagem):
-    assert login_page.get_error_message() == mensagem
-```
-
-> **Other feature files** – follow the same structure:
-> * Create a module (`saldo_extrato_steps.py`, `transferencia_steps.py`, …).  
-> * Add a `scenarios()` call pointing to the correct feature.  
-> * Define `@given`, `@when`, `@then` blocks that map to the Gherkin text.
-
----
-
-## 6️⃣ Quick‑start guide (how to add a new page‑object)
-
-```python
-# pages/transferencia_page.py
-class TransferenciaPage:
+class BasePage:
     def __init__(self, driver):
         self.driver = driver
 
-    def select_origin(self, account_name):
-        # Locate the origin account selector and pick the account
-        pass
+    def go_to(self, url):
+        self.driver.get(url)
 
-    def select_destination(self, account_name):
-        pass
-
-    def enter_amount(self, amount):
-        pass
-
-    def confirm(self):
-        pass
-
-    def get_origin_balance(self):
-        pass
-
-    def get_destination_balance(self):
-        pass
-
-    def get_transaction_history(self):
-        pass
+    def find(self, *args, **kwargs):
+        return self.driver.find_element(*args, **kwargs)
 ```
 
-In the step‑definition you simply call:
+### `page_objects/cadastro_page.py`
 
 ```python
-from pages.transferencia_page import TransferenciaPage
+class CadastroPage(BasePage):
+    URL = "https://app.exemplo.com/cadastro"
 
-def transfer_page(driver):
-    return TransferenciaPage(driver)
+    # Elementos (usando locators que você deve adaptar)
+    btn_registrar = ("css selector", "button#registrar")
+    mensagem = ("css selector", "div.alert-success")
 
-@when(parsers.parse('eu seleciono conta origem “{origem}”'))
-def select_origin(transfer_page, origem):
-    transfer_page.select_origin(origem)
+    def open(self):
+        self.go_to(self.URL)
+
+    def preenche_campos_validos(self):
+        # Exemplo simples – preencha os campos necessários
+        self.find("id", "nome").send_keys("João Silva")
+        self.find("id", "email").send_keys("joao.silva@email.com")
+        self.find("id", "telefone").send_keys("11987654321")
+        self.find("id", "cep").send_keys("01000-000")
+        # ... outros campos
+
+    def preenche_campo_invalido(self, campo):
+        if campo == "telefone":
+            self.find("id", "telefone").send_keys("abc")          # inválido
+        elif campo == "CEP":
+            self.find("id", "cep").send_keys("123")              # inválido
+        elif campo == "email":
+            self.find("id", "email").send_keys("email.com")      # inválido
+
+    def preenche_nome_vazio(self):
+        self.find("id", "nome").clear()
+
+    def click_registrar(self):
+        self.find(*self.btn_registrar).click()
+
+    def get_mensagem(self):
+        return self.find(*self.mensagem).text
 ```
+
+*(Implemente páginas semelhantes para login, transferências, etc.)*
 
 ---
 
-## 7️⃣ Running the suite
+## 6.  Step‑Definitions (`tests/steps/common_steps.py`)
+
+```python
+import pytest
+from pytest_bdd import given, when, then, parsers
+
+# ----------------------------------------------------------------------
+# Cadastro de Usuário
+# ----------------------------------------------------------------------
+@given("o usuário está na página de cadastro")
+def user_on_cadastro_page(base_page):
+    page = base_page.__class__(base_page.driver)  # instancia a página específica
+    # Se você já tem `CadastroPage` importado, basta usar diretamente
+    from page_objects.cadastro_page import CadastroPage
+    page = CadastroPage(base_page.driver)
+    page.open()
+    return page
+
+@when("ele preenche todos os campos obrigatórios com dados válidos")
+def fill_all_valid_fields(user_on_cadastro_page):
+    user_on_cadastro_page.preenche_campos_validos()
+
+@when("clica no botão “Registrar”")
+def click_register(user_on_cadastro_page):
+    user_on_cadastro_page.click_registrar()
+
+@then("o sistema exibe a mensagem “Cadastro concluído com sucesso”")
+def assert_success_message(user_on_cadastro_page):
+    assert "Cadastro concluído com sucesso" in user_on_cadastro_page.get_mensagem()
+
+@then("o usuário aparece autenticado na página de login")
+def assert_user_logged_in(base_page):
+    # Simples verificação de elemento que só aparece após login
+    assert base_page.find("css selector", "div.logged-in").is_displayed()
+
+
+# ----------------------------------------------------------------------
+# Dados inválidos (Scenario Outline)
+# ----------------------------------------------------------------------
+@when(parsers.cfparse('ele preenche os campos obrigatórios com "<campo>" inválido'))
+def fill_invalid_field(user_on_cadastro_page, campo):
+    user_on_cadastro_page.preenche_campo_invalido(campo)
+
+@then(parsers.cfparse('o sistema exibe a mensagem de erro correspondente ao "<campo>"'))
+def assert_error_message(user_on_cadastro_page, campo):
+    mensagem = user_on_cadastro_page.get_mensagem()
+    # Mapeamento simples – adapte conforme sua UI
+    mensagens_erro = {
+        "telefone": "Telefone inválido",
+        "CEP": "CEP inválido",
+        "email": "Email inválido",
+    }
+    assert mensagens_erro[campo] in mensagem
+
+
+@then("nenhum dado é salvo no banco")
+def assert_no_data_saved(base_page):
+    # Aqui você pode chamar sua camada de persistência ou fazer um GET no endpoint
+    # Exemplo fictício:
+    from api_client import get_user_by_email  # suponha que exista
+    assert get_user_by_email("joao.silva@email.com") is None
+
+
+# ----------------------------------------------------------------------
+# Campos obrigatórios não preenchidos
+# ----------------------------------------------------------------------
+@when("ele deixa o campo “Nome” em branco")
+def leave_name_empty(user_on_cadastro_page):
+    user_on_cadastro_page.preenche_nome_vazio()
+
+@then('o sistema exibe a mensagem “Nome é obrigatório”')
+def assert_name_required(user_on_cadastro_page):
+    assert "Nome é obrigatório" in user_on_cadastro_page.get_mensagem()
+
+
+# ----------------------------------------------------------------------
+# Login – você pode seguir o mesmo padrão
+# ----------------------------------------------------------------------
+```
+
+> **Dica:** Para cenários que necessitam de dados de banco, use *fixtures* que criam/limpam registros antes de cada teste.
+
+---
+
+## 7.  Testes que carregam os Features (`tests/test_features.py`)
+
+```python
+import pytest
+from pytest_bdd import scenario
+
+# Cada cenário de cada feature
+# -----------------------------------------
+# Cadastro
+from features.cadastro_de_usuario import (
+    cadastro_de_usuario
+)
+
+# Login
+# -----------------------------------------
+# import e assim por diante
+
+# Exemplo de cenário de cadastro completo
+@scenario("features/cadastro_de_usuario.feature", "Cadastros completos são aceitos")
+def test_cadastro_completo():
+    pass  # o corpo fica vazio – o pytest‑bdd já liga os steps
+
+# Cenário Outline – o pytest‑bdd gera 3 cenários automaticamente
+@scenario("features/cadastro_de_usuario.feature", "Dados inválidos bloqueiam o cadastro")
+def test_dados_invalidos():
+    pass
+
+# Cenário de campos vazios
+@scenario("features/cadastro_de_usuario.feature", "Campos obrigatórios não preenchidos impedem o cadastro")
+def test_campos_obrigatorios():
+    pass
+
+# Repita o padrão para as demais features...
+```
+
+> Se preferir, basta criar um arquivo `__init__.py` vazio dentro de `tests/steps` para que o `pytest-bdd` descubra os step‑definitions automaticamente.
+
+---
+
+## 8.  Como executar
 
 ```bash
-# Install dependencies
-pip install -r requirements.txt
-
-# Run all tests
-pytest
-
-# Run a single feature
-pytest features/login.feature
-
-# Show a step‑by‑step trace
-pytest -s -vv
+$ pip install -r requirements.txt
+$ pytest --gherkin-terminal-reporter
 ```
 
-> **Tip** – For large test suites, use tags (`@login`, `@transfer`) in the Gherkin and filter with `-k`.
+O parâmetro `--gherkin-terminal-reporter` fornece saída legível (tipo “✓” ou “✗”) – útil para CI.
 
 ---
 
-## 8️⃣ What next?
+## 9.  Dicas de melhoria
 
-1. **Implement the page‑object methods** – replace the `pass` statements with Selenium commands.  
-2. **Add assertions** – you already have them in the step functions; ensure they capture real UI state.  
-3. **Improve data isolation** – use `pytest` fixtures to generate random emails/CPF numbers per test.  
-4. **Add parallelism** – `pytest-xdist` to run scenarios concurrently.  
-5. **CI integration** – add a GitHub Actions workflow that runs the tests on every push.
+| Item | Como melhorar |
+|------|---------------|
+| **Mock de API** | Se seu front‑end chama serviços, use `responses` ou `requests-mock` para simular respostas. |
+| **Fixture de dados** | Crie uma fixture `user_fixture` que crie um usuário antes dos testes de login. |
+| **Páginas mais detalhadas** | Crie métodos separados (por exemplo, `fill_account_number`, `select_destination`) para cada ação. |
+| **Logs e screenshots** | Em caso de falha, capture screenshot (`driver.save_screenshot`). |
+| **CI** | Adicione um job no GitHub Actions com `pytest` e reporte em formato JUnit. |
 
-With the skeleton above you have a fully‑functional BDD test framework that can be expanded to cover the rest of the ParaBank features in a clean, maintainable way. Happy testing!
+---
+
+## 10.  Resumo
+
+- **Estrutura**: Features, Step‑definitions, Fixtures + Page Objects.  
+- **Ferramenta**: `pytest-bdd` + Selenium.  
+- **Testes**: Cada cenário é carregado via `@scenario`.  
+- **Extensibilidade**: É só criar novas páginas e passos quando a UI mudar.
+
+Agora, com esses arquivos de base, você já tem um framework completo que traduz diretamente os cenários BDD em testes automatizados em Python. Boa codificação!
