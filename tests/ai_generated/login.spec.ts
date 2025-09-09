@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../helpers/fixtures';
 
 const HOME = 'https://parabank.parasoft.com/parabank/index.htm';
 
