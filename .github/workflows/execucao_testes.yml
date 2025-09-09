@@ -3,6 +3,8 @@ name: Execução de testes
 on:
   workflow_run:
     workflows: [BDD Test Generation]
+    types:
+        completed
  
 jobs:
   generate-and-test:
