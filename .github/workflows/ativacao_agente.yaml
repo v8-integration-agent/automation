@@ -16,24 +16,40 @@ jobs:
           - 11434:11434
         options: >-
           --ipc=host
-          --gpus all
 
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Esperar o Ollama subir
+      - name: Esperar Ollama subir
         run: |
           sleep 10
-          curl http://localhost:11434/api/tags || exit 1
+          curl http://localhost:11434/api/tags || (echo "Ollama não respondeu" && exit 1)
 
-      - name: Gerar BDDs
+      - name: Instalar dependências Python
         run: |
+          python3 -m venv venv
+          source venv/bin/activate
+          pip install --upgrade pip
+
+      - name: Gerar BDDs a partir dos critérios
+        run: |
+          source venv/bin/activate
           python3 ai/generate_bdd.py requirements/criterios.md
 
-      - name: Gerar testes
+      - name: Gerar testes a partir dos BDDs
         run: |
+          source venv/bin/activate
           python3 ai/generate_tests.py
+
+      - name: Upload dos artefatos (BDD + Testes)
+        uses: actions/upload-artifact@v4
+        with:
+          name: bdd-tests
+          path: |
+            bdd/
+            tests/
+
 
       # - name: Clone do repositório
       #   run: |
