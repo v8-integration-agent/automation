@@ -12,16 +12,17 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-        
+
       - name: Instalar Ollama
         run: |
           curl -fsSL https://ollama.com/install.sh | sh
           ollama pull mistral
 
-      - name: Iniciar Ollama server
+      - name: Iniciar Ollama server em background
         run: |
           nohup ollama serve > /tmp/ollama.log 2>&1 &
-          sleep 5
+          sleep 10
+          curl http://127.0.0.1:11434/api/tags || (echo "Ollama não respondeu" && cat /tmp/ollama.log && exit 1)
 
       - name: Instalar dependências Python
         run: |
@@ -46,24 +47,3 @@ jobs:
           path: |
             bdd/
             tests/
-      # - name: Clone do repositório
-      #   run: |
-      #     git clone https://github.com/Felipe-Janazi/integration-agent.git
-      
-      # - name: Entrando no repositório
-      #   run: |
-      #     cd integration-agent
-      
-      # - name: Configuração playwright
-      #   run: |
-      #     npm init -y && npm i -D @playwright/test typescript ts-node && npx playwright install --with-deps
-      
-      # - name: Instalação Ollama 
-      #   run: |
-      #     curl -fsSL https://ollama.com/install.sh | sh
-      
-      # - name: Rodando os testes 
-      #   run: |
-      #     npx playwright test
-      #   continue-on-error: True
-
