@@ -12,6 +12,13 @@ jobs:
     runs-on: ubuntu-latest
  
     steps:
-      - name: Conexão de pipelines
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Execução testes
         run: |
-            echo "conexão bem sucedida"
+            npm init -y
+            npm i -D @playwright/test typescript ts-node
+            npx playwright install --with-deps
+            npx playwright test
+
