@@ -44,6 +44,10 @@ jobs:
       - name: Install dependencies
         run: |
           pip install groq pytest pytest-bdd
+
+      - name: Listar resultados dos testes
+        run: ls -R test-results || echo "Nenhum arquivo encontrado"
+
  
       - name: Generate analises
         run: python ai/generate_analise.py
