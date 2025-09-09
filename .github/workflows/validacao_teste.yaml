@@ -4,6 +4,7 @@ run-name: Running - Validação de testes
 on:
   workflow_run:
     workflows: [Execução de testes]
+    types: [completed]
 
 jobs:
   generate-and-test:
