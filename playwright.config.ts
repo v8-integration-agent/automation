@@ -11,7 +11,7 @@ export default defineConfig({
     ['html', { outputFolder: 'playwright-report', open: 'never' }],
   ],
   use: {
-    headless: false,
+    headless: true,
     baseURL: process.env.BASE_URL || 'https://parabank.parasoft.com/parabank',
     trace: 'retain-on-failure',
     video: 'retain-on-failure',
