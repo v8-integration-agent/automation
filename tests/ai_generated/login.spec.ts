@@ -25,7 +25,6 @@ test.afterEach(async ({}, testInfo) => {
   }
 });
 
-
 test.describe('Login no Parabank', () => {
   test('Login inválido', async ({ page }) => {
     await openHome(page);
@@ -35,7 +34,7 @@ test.describe('Login no Parabank', () => {
     await page.locator(LoginLocators.loginButton).click();
 
     await expect(page.locator(LoginLocators.errorMessage)).toContainText(
-     'An internal error has occurred and has been logged.'
+      'An internal error has occurred and has been logged.'
     );
   });
 
@@ -48,3 +47,4 @@ test.describe('Login no Parabank', () => {
 
     await expect(page.locator(LoginLocators.welcomeMessage)).toContainText('Welcome');
   });
+});
