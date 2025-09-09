@@ -15,17 +15,10 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: npm init
+      - name: Execução testes
         run: |
-          npm init -y
- 
-      - name: npm i 
-        run: |
-          npm i -D @playwright/test typescript ts-node
-      - name: npm x 
-        run: |
-          npx playwright install --with-deps
-      - name: Rodando os testes 
-        run: |
-          npx playwright test
+            npm init -y
+            npm i -D @playwright/test typescript ts-node
+            sudo npx playwright install --with-deps
+            npx playwright test
 
