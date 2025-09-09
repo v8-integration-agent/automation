@@ -1,254 +1,160 @@
-## Gherkin – ParaBank  
-*(Português – todos os cenários foram escritos em Gherkin padrão 1.0)*  
-
 ```gherkin
+# Feature: Cadastro de Usuário
+# ---------------------------------
 Feature: Cadastro de Usuário
-  Como novo cliente do ParaBank
-  Quero me cadastrar preenchendo todos os campos obrigatórios
-  Para poder usar o sistema
 
-  Background:
-    Dado que eu esteja na página “Criar Conta”
+  Scenario: Cadastros completos são aceitos
+    Given o usuário está na página de cadastro
+    When ele preenche todos os campos obrigatórios com dados válidos
+    And clica no botão “Registrar”
+    Then o sistema exibe a mensagem “Cadastro concluído com sucesso”
+    And o usuário aparece autenticado na página de login
 
-  Scenario: Cadastro completo e válido
-    When eu preencho “Nome” com “Ana Silva”
-    And eu preencho “CPF” com “123.456.789-00”
-    And eu preencho “Telefone” com “(11) 91234-5678”
-    And eu preencho “CEP” com “01001-000”
-    And eu preencho “Email” com “ana.silva@example.com”
-    And eu preencho “Senha” com “SenhaSegura123”
-    And eu preencho “Confirmar Senha” com “SenhaSegura123”
-    And eu clico em “Criar Conta”
-    Then eu devo ver a mensagem “Cadastro concluído com sucesso!”
-    And eu devo ser redirecionado para a tela de login
-
-  Scenario Outline: Validação de campos inválidos
-    When eu preencho “Telefone” com "<telefone>"
-    And eu preencho “CEP” com "<cep>"
-    And eu preencho “Email” com "<email>"
-    And eu clico em “Criar Conta”
-    Then eu devo ver a mensagem "<mensagem>"
+  Scenario Outline: Dados inválidos bloqueiam o cadastro
+    Given o usuário está na página de cadastro
+    When ele preenche os campos obrigatórios com "<campo>" inválido
+    And clica em “Registrar”
+    Then o sistema exibe a mensagem de erro correspondente ao "<campo>"
+    And nenhum dado é salvo no banco
 
     Examples:
-      | telefone           | cep      | email                    | mensagem                                |
-      | 1234               | 01001-000| ana.silva@example.com    | Telefone inválido, digite um telefone 11 dígitos |
-      | (11) 91234-5678    | 01       | ana.silva@example.com    | CEP inválido, digite um CEP no formato 5-4 |
-      | (11) 91234-5678    | 01001-000| ana.silvaexample.com     | E‑mail inválido, digite um e‑mail válido |
+      | campo      |
+      | telefone   |
+      | CEP        |
+      | email      |
 
-  Scenario: Tentativa de cadastro com campo obrigatório em branco
-    When eu deixo o campo “Nome” vazio
-    And eu preencho os demais campos corretamente
-    And eu clico em “Criar Conta”
-    Then eu devo ver a mensagem “Nome é obrigatório”
+  Scenario: Campos obrigatórios não preenchidos impedem o cadastro
+    Given o usuário está na página de cadastro
+    When ele deixa o campo “Nome” em branco
+    And clica em “Registrar”
+    Then o sistema exibe a mensagem “Nome é obrigatório”
 
-  Scenario: Cadastro com email já existente
-    Given que “email.exemplo@example.com” já está cadastrado
-    When eu preencho “Email” com “email.exemplo@example.com”
-    And eu preencho todos os outros campos corretamente
-    And eu clico em “Criar Conta”
-    Then eu devo ver a mensagem “E‑mail já cadastrado”
-
---------------------------------------------------------------------
-
+# Feature: Login
+# ---------------------------------
 Feature: Login
-  Como usuário registrado
-  Quero fazer login com credenciais válidas
-  Para acessar minha conta
 
-  Background:
-    Dado que o usuário “usuario1” esteja cadastrado com senha “Senha123”
+  Scenario: Usuário com credenciais válidas entra no sistema
+    Given o usuário possui conta registrada
+    And está na página de login
+    When ele digita seu e‑mail e senha corretos
+    And clica em “Entrar”
+    Then o sistema redireciona para a página inicial da conta
+    And mostra o saldo atual do usuário
 
-  Scenario: Login bem‑sucedido
-    When eu preencho “E‑mail” com “usuario1@example.com”
-    And eu preencho “Senha” com “Senha123”
-    And eu clico em “Entrar”
-    Then eu devo ser redirecionado para a página inicial da conta
-    And eu devo ver “Bem‑vindo, usuario1”
+  Scenario: Credenciais inválidas retornam erro
+    Given o usuário está na página de login
+    When ele digita um e‑mail não registrado
+    And uma senha incorreta
+    And clica em “Entrar”
+    Then o sistema exibe a mensagem “Credenciais inválidas”
 
-  Scenario: Login com senha incorreta
-    When eu preencho “E‑mail” com “usuario1@example.com”
-    And eu preencho “Senha” com “SenhaErrada”
-    And eu clico em “Entrar”
-    Then eu devo ver a mensagem “Credenciais inválidas. Por favor, tente novamente.”
+  Scenario: Usuário recém‑registrado pode fazer login imediatamente
+    Given o usuário acabou de se registrar com sucesso
+    When ele tenta fazer login com as mesmas credenciais
+    Then o sistema aceita e redireciona para a página inicial
 
-  Scenario: Login com e‑mail inexistente
-    When eu preencho “E‑mail” com “naoexiste@example.com”
-    And eu preencho “Senha” com “Senha123”
-    And eu clico em “Entrar”
-    Then eu devo ver a mensagem “Credenciais inválidas. Por favor, tente novamente.”
-
---------------------------------------------------------------------
-
+# Feature: Acesso à Conta – Saldo e Extrato
+# ---------------------------------
 Feature: Acesso à Conta – Saldo e Extrato
-  Como cliente logado
-  Quero visualizar meu saldo atualizado
-  E consultar o extrato em ordem cronológica
 
-  Background:
-    Dado que eu esteja logado no sistema
-    E que a minha conta possua saldo R$ 1.000,00
-    E que haja 3 transações recentes
+  Scenario: Saldo reflete operações recentes
+    Given o usuário está logado na sua conta
+    When ele realiza um depósito de R$ 500,00
+    And volta à página inicial
+    Then o saldo exibido é atualizado com o novo valor
 
-  Scenario: Exibir saldo após operação
-    When eu realizo uma transferência de R$ 200,00 para conta “123-45”
-    Then o saldo exibido deve ser “R$ 800,00”
+  Scenario: Extrato lista transações em ordem cronológica
+    Given o usuário tem pelo menos três transações registradas
+    When ele acessa a aba “Extrato”
+    Then a lista mostra as transações mais recentes no topo
+    And cada item exibe data, descrição e valor
 
-  Scenario Outline: Extrato em ordem cronológica
-    When eu acesso “Extrato”
-    Then eu devo ver a lista de transações:
-      | Data       | Descrição          | Valor     |
-      | <data1>    | Transferência para 123-45 | -R$ 200,00 |
-      | <data2>    | Depósito            | +R$ 500,00 |
-      | <data3>    | Pagamento de Luz    | -R$ 150,00 |
-
-    Examples:
-      | data1      | data2      | data3      |
-      | 2025-08-01 | 2025-07-30 | 2025-07-25 |
-
---------------------------------------------------------------------
-
+# Feature: Transferência de Fundos
+# ---------------------------------
 Feature: Transferência de Fundos
-  Como cliente logado
-  Quero transferir dinheiro de uma conta para outra
-  Para gerenciar meus recursos
 
-  Background:
-    Dado que eu esteja logado no sistema
-    E a minha conta tenha saldo R$ 1.000,00
+  Scenario: Transferência dentro do saldo disponível
+    Given o usuário tem saldo de R$ 1.000,00 na conta A
+    And a conta B possui saldo de R$ 200,00
+    When ele transfere R$ 300,00 da conta A para a conta B
+    And confirma a operação
+    Then R$ 300,00 é debitado da conta A
+    And R$ 300,00 é creditado na conta B
+    And ambas as contas mostram a transação no histórico
 
-  Scenario: Transferência válida entre contas
-    When eu seleciono conta origem “Minha Conta”
-    And eu seleciono conta destino “Conta 987‑65”
-    And eu preencho “Valor” com “R$ 300,00”
-    And eu confirmo a transferência
-    Then o saldo da conta origem deve ser “R$ 700,00”
-    And o saldo da conta destino deve ser “R$ 300,00”
-    And a transação deve aparecer no histórico de ambas as contas
+  Scenario: Transferência acima do saldo não é permitida
+    Given o usuário tem saldo de R$ 150,00 na conta A
+    When ele tenta transferir R$ 200,00 da conta A para a conta B
+    And confirma a operação
+    Then o sistema exibe a mensagem “Saldo insuficiente”
+    And nenhum débito ocorre
 
-  Scenario Outline: Transferência com valor superior ao saldo
-    When eu seleciono conta origem “Minha Conta”
-    And eu seleciono conta destino “Conta 987‑65”
-    And eu preencho “Valor” com "<valor>"
-    And eu confirmo a transferência
-    Then eu devo ver a mensagem "<mensagem>"
+  Scenario: Transferência para a própria conta é bloqueada
+    Given o usuário tem saldo de R$ 400,00
+    When ele seleciona a própria conta como destino
+    And tenta transferir R$ 100,00
+    Then o sistema exibe a mensagem “Conta de destino deve ser diferente da origem”
 
-    Examples:
-      | valor      | mensagem                                                |
-      | R$ 1.200,00 | “Saldo insuficiente. Transferência não realizada.”     |
-      | R$ 0,00      | “O valor deve ser maior que zero.”                     |
-
-  Scenario: Transferência com campo em branco
-    When eu deixo o campo “Valor” vazio
-    And eu confirmo a transferência
-    Then eu devo ver a mensagem “Campo valor é obrigatório”
-
---------------------------------------------------------------------
-
+# Feature: Solicitação de Empréstimo
+# ---------------------------------
 Feature: Solicitação de Empréstimo
-  Como cliente logado
-  Quero solicitar um empréstimo
-  Para financiar projetos
 
-  Background:
-    Dado que eu esteja logado no sistema
-
-  Scenario: Empréstimo aprovado
-    When eu preencho “Valor” com “R$ 5.000,00”
-    And eu preencho “Renda Anual” com “R$ 80.000,00”
-    And eu envio a solicitação
-    Then eu devo ver o status “Aprovado”
-    And a mensagem “Parabéns! Seu empréstimo foi aprovado.” deve ser exibida
+  Scenario: Empréstimo aprovado quando renda atende limite
+    Given o usuário possui renda anual de R$ 120.000,00
+    When ele solicita empréstimo de R$ 20.000,00
+    And confirma a requisição
+    Then o sistema retorna “Aprovado”
+    And o valor fica disponível na conta do usuário
 
   Scenario: Empréstimo negado por renda insuficiente
-    When eu preencho “Valor” com “R$ 5.000,00”
-    And eu preencho “Renda Anual” com “R$ 20.000,00”
-    And eu envio a solicitação
-    Then eu devo ver o status “Negado”
-    And a mensagem “Seu empréstimo foi negado. Renda insuficiente.” deve ser exibida
+    Given o usuário possui renda anual de R$ 30.000,00
+    When ele solicita empréstimo de R$ 50.000,00
+    And confirma a requisição
+    Then o sistema retorna “Negado”
 
-  Scenario: Empréstimo com campo em branco
-    When eu deixo “Valor” vazio
-    And eu preencho “Renda Anual” com “R$ 80.000,00”
-    And eu envio a solicitação
-    Then eu devo ver a mensagem “Campo valor é obrigatório”
+  Scenario: Solicitação sem preencher campos obrigatórios falha
+    Given o usuário abre a tela de solicitação
+    When ele deixa o campo “Valor do empréstimo” em branco
+    And tenta submeter
+    Then o sistema exibe a mensagem “Valor é obrigatório”
 
---------------------------------------------------------------------
-
+# Feature: Pagamento de Contas
+# ---------------------------------
 Feature: Pagamento de Contas
-  Como cliente logado
-  Quero registrar um pagamento
-  Para manter contas em dia
 
-  Background:
-    Dado que eu esteja logado no sistema
+  Scenario: Pagamento normal é registrado
+    Given o usuário está na página de pagamento
+    When ele preenche: beneficiário “Pedro”, endereço “Rua X, 123”, cidade “São Paulo”, estado “SP”, CEP “01000-000”, telefone “(11) 99999-9999”, conta de destino “123456”, valor R$ 150,00, data “2025-10-01”
+    And confirma o pagamento
+    Then o sistema exibe “Pagamento agendado com sucesso”
+    And a transação aparece no histórico da conta
 
-  Scenario: Pagamento futuro agendado
-    When eu preencho “Beneficiário” com “Concessionária X”
-    And eu preencho “Endereço” com “Rua A, 123”
-    And eu preencho “Cidade” com “São Paulo”
-    And eu preencho “Estado” com “SP”
-    And eu preencho “CEP” com “01001-000”
-    And eu preencho “Telefone” com “(11) 98765-4321”
-    And eu preencho “Conta de Destino” com “987‑65”
-    And eu preencho “Valor” com “R$ 250,00”
-    And eu preencho “Data” com “2025‑09‑30”
-    And eu confirmo o pagamento
-    Then o pagamento deve aparecer na lista de transações agendadas
-    And a data do pagamento deve ser “30/09/2025”
+  Scenario: Pagamento futuro respeita data de agendamento
+    Given o usuário agenda pagamento para “2025-12-01”
+    When ele visualiza a lista de transações
+    Then a transação está marcada como “Agendado”
+    And não é debitada antes da data de vencimento
 
-  Scenario: Pagamento imediato
-    When eu preencho “Beneficiário” com “Banco Y”
-    And eu preencho “Conta de Destino” com “123‑45”
-    And eu preencho “Valor” com “R$ 150,00”
-    And eu confirmo o pagamento
-    Then a transação deve aparecer imediatamente no histórico
-    And o saldo da conta deve ser debitado em “R$ 150,00”
+  Scenario: Falta de dados obrigatórios impede o pagamento
+    Given o usuário abre a tela de pagamento
+    When ele deixa o campo “Telefone” em branco
+    And tenta enviar
+    Then o sistema exibe a mensagem “Telefone é obrigatório”
 
-  Scenario Outline: Pagamento com dados inválidos
-    When eu preencho “Telefone” com "<telefone>"
-    And eu preencho “CEP” com "<cep>"
-    And eu preencho “Data” com "<data>"
-    And eu confirmo o pagamento
-    Then eu devo ver a mensagem "<mensagem>"
+# Feature: Navegação e Usabilidade
+# ---------------------------------
+Feature: Navegação e Usabilidade
 
-    Examples:
-      | telefone          | cep      | data       | mensagem                                 |
-      | 1234              | 01001-000 | 2025‑09‑30 | Telefone inválido, digite no formato (xx) xxxxx‑xxxx |
-      | (11) 98765-4321   | 01       | 2025‑09‑30 | CEP inválido, digite no formato 5‑4           |
-      | (11) 98765-4321   | 01001-000 | 2020‑01‑01 | Data de pagamento não pode ser passada.      |
+  Scenario: Todas as páginas carregam sem erros
+    Given o usuário navega entre todas as seções do aplicativo
+    Then nenhuma página apresenta erros de carregamento nem exceções
 
---------------------------------------------------------------------
+  Scenario: Mensagens de erro são claras e objetivas
+    When o usuário tenta acessar recurso sem permissão
+    Then o sistema exibe “Acesso negado” em vez de “Erro inesperado”
 
-Feature: Navegação e Usabilidade – Requisitos Gerais
-  Como usuário
-  Quero ter uma experiência consistente em todas as páginas
-
-  Scenario: Carregamento sem erros
-    When eu acesso qualquer página do sistema
-    Then a página deve carregar em menos de 3 segundos
-    And não deve aparecer nenhuma mensagem de erro de navegação
-
-  Scenario: Consistência de links e menus
-    When eu navego pelas seguintes páginas: “Conta”, “Extrato”, “Transferências”, “Empréstimos”, “Pagamentos”
-    Then cada página deve exibir o menu de navegação com os mesmos itens
-    And o link “Sair” deve estar presente em todas as páginas
-
-  Scenario: Mensagens de erro claras
-    When eu tento submeter um formulário incompleto
-    Then cada campo em falta deve exibir uma mensagem de erro no formato “<Campo> é obrigatório”
-    And a mensagem global deve indicar “Por favor, corrija os erros abaixo”
-
-  Scenario: Acessibilidade
-    When eu navego usando apenas o teclado
-    Then todos os botões e campos devem receber foco em ordem lógica
-    And as imagens devem ter textos alternativos adequados
-
+  Scenario: Menu de navegação está consistente em todas as páginas
+    Given o usuário está em qualquer página
+    When ele observa o menu superior
+    Then os links “Home”, “Transferência”, “Extrato”, “Empréstimo”, “Pagamentos” são sempre visíveis e corretos
 ```
-
-> **Obs.:**  
-> • Cada *Background* contém o estado pré‑condicional comum ao conjunto de cenários da feature.  
-> • Os *Scenario Outline* permitem testar variações de entrada sem duplicação de código.  
-> • Mensagens de erro foram padronizadas de acordo com as regras de negócio citadas.  
-> • O tempo de carregamento (≤ 3 s) e a ausência de erros de navegação são verificações de usabilidade e desempenho.  
-
-Esses cenários cobrem os requisitos de aceite apresentados, garantindo que a aplicação **ParaBank** atenda às funcionalidades de cadastro, login, saldo/extrato, transferência, empréstimo, pagamento de contas e requisitos gerais de navegação.
