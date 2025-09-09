@@ -1,30 +1,26 @@
 **Feature: Cadastro de Usuário**
 
 ```gherkin
-Scenario: Cadastro bem‑sucesso com todos os campos obrigatórios preenchidos
-  Given o usuário está na página de cadastro
-  When ele preenche os campos: nome, CPF, telefone, CEP, email, senha e confirma a senha
-  And clica em “Registrar”
-  Then o sistema deve exibir a mensagem “Cadastro efetuado com sucesso”
-  And o usuário deve ser redirecionado à página de login
+Scenario: Usuário cadastra conta com todos os campos obrigatórios preenchidos
+  Given o usuário acessa a página de cadastro
+  When ele preenche os campos: nome="Ana Silva", email="ana.silva@example.com", telefone="(11) 98765‑4321", CEP="01234‑567", endereço="Rua A, 123"
+  And clica em “Cadastrar”
+  Then o sistema exibe a mensagem de confirmação “Cadastro concluído com sucesso”
+  And o usuário pode fazer login com as credenciais recém‑criadas
 
-Scenario: Tentativa de cadastro com campo telefone inválido
-  Given o usuário está na página de cadastro
-  When ele preenche todos os campos, mas insere um telefone com caracteres inválidos
-  And clica em “Registrar”
-  Then o sistema deve exibir “Telefone inválido – use o formato (xx) xxxx‑xxxx”
+Scenario Outline: Usuário tenta cadastrar conta com campo inválido
+  Given o usuário acessa a página de cadastro
+  When ele preenche os campos: nome="<nome>", email="<email>", telefone="<telefone>", CEP="<cep>", endereço="Rua A, 123"
+  And clica em “Cadastrar”
+  Then o sistema exibe a mensagem de erro "<mensagem_erro>"
+  And a conta não é criada
 
-Scenario: Tentativa de cadastro com e‑mail duplicado
-  Given um usuário já cadastrado com e‑mail “exemplo@teste.com”
-  And o usuário está na página de cadastro
-  When ele preenche todos os campos, usando o mesmo e‑mail
-  And clica em “Registrar”
-  Then o sistema deve exibir “E‑mail já cadastrado. Por favor, use outro endereço”
-
-Scenario: Campos obrigatórios em branco
-  Given o usuário está na página de cadastro
-  When ele clica em “Registrar” sem preencher nenhum campo
-  Then o sistema deve exibir “Todos os campos são obrigatórios”
+  Examples:
+    | nome | email               | telefone | cep      | mensagem_erro                                 |
+    |      | ana.silva@ex.com    | (11)9876 | 01234-567| "Nome é obrigatório"                          |
+    | Ana  | anasilvaexample.com | (11)9876 | 01234-567| "Email inválido"                              |
+    | Ana  | ana.silva@ex.com    | 111111   | 01234-567| "Telefone inválido"                           |
+    | Ana  | ana.silva@ex.com    | (11)98765-4321 | 0123-567 | "CEP inválido"                                 |
 ```
 
 ---
@@ -32,47 +28,41 @@ Scenario: Campos obrigatórios em branco
 **Feature: Login**
 
 ```gherkin
-Scenario: Login bem‑sucesso com credenciais válidas
-  Given o usuário já está cadastrado
-  And está na página de login
-  When ele digita seu e‑mail e senha corretos
-  And clica em “Entrar”
-  Then o sistema deve redirecionar para a página inicial da conta
+Scenario: Usuário faz login com credenciais válidas
+  Given o usuário está na página de login
+  When ele insere o email "<email>" e a senha "<senha>"
+  And clica em “Login”
+  Then o usuário é redirecionado para a página inicial da conta
+  And o banner de boas‑vindas exibe “Bem‑vindo, <nome>”
 
-Scenario: Login com senha incorreta
-  Given o usuário já está cadastrado
-  And está na página de login
-  When ele digita seu e‑mail e uma senha inválida
-  And clica em “Entrar”
-  Then o sistema deve exibir “Credenciais inválidas. Tente novamente”
+  Examples:
+    | email              | senha    | nome  |
+    | ana.silva@example.com | 123456 | Ana   |
 
-Scenario: Login com e‑mail não cadastrado
-  Given o usuário não está cadastrado
-  And está na página de login
-  When ele digita um e‑mail desconhecido e uma senha válida
-  And clica em “Entrar”
-  Then o sistema deve exibir “Credenciais inválidas. Tente novamente”
+Scenario: Usuário tenta login com credenciais inválidas
+  Given o usuário está na página de login
+  When ele insere o email "<email>" e a senha "<senha>"
+  And clica em “Login”
+  Then o sistema exibe a mensagem de erro “Credenciais inválidas”
+  And permanece na página de login
 ```
 
 ---
 
-**Feature: Visualização de Saldo e Extrato**
+**Feature: Acesso à aplicação bancária (Saldo e Extrato)**
 
 ```gherkin
-Scenario: Exibição do saldo atualizado após depósito
-  Given o usuário está logado
-  And sua conta tem saldo de R$ 1.000,00
-  When ele realiza um depósito de R$ 200,00
-  Then o saldo exibido na página inicial deve ser R$ 1.200,00
+Scenario: Usuário visualiza saldo atualizado após operação
+  Given o usuário está autenticado
+  When ele realiza a operação de “Transferência” de R$100,00
+  And volta à tela principal
+  Then o saldo exibido deve ser “R$<saldo_atualizado>”
 
-Scenario: Listagem do extrato em ordem cronológica
-  Given o usuário tem três transações recentes
-    | Data       | Descrição | Valor  |
-    | 2025-08-01 | Depósito  | +1000 |
-    | 2025-08-03 | Transferência | -200 |
-    | 2025-08-05 | Pagamento  | -50  |
-  When o usuário acessa a aba “Extrato”
-  Then as transações devem aparecer listadas do mais recente ao mais antigo
+Scenario: Usuário visualiza extrato em ordem cronológica
+  Given o usuário está autenticado
+  When ele acessa a aba “Extrato”
+  Then o extrato lista as transações recentes em ordem decrescente de data
+  And cada linha exibe data, descrição, valor e saldo final
 ```
 
 ---
@@ -80,24 +70,26 @@ Scenario: Listagem do extrato em ordem cronológica
 **Feature: Transferência de Fundos**
 
 ```gherkin
-Scenario: Transferência bem‑sucesso entre duas contas
-  Given o usuário está logado na conta A com saldo R$ 500,00
-  And a conta B está cadastrada
-  When ele seleciona conta A como origem, conta B como destino e digita R$ 150,00
+Scenario: Usuário transfere fundos entre contas válidas
+  Given o usuário está autenticado
+  And a conta “Corrente” tem saldo de R$500,00
+  When ele seleciona a origem “Corrente”, destino “Poupança” e valor “R$200,00”
   And confirma a transferência
-  Then conta A deve ter saldo R$ 350,00
-  And conta B deve ter saldo R$ 150,00
-  And ambas as contas devem registrar a transação no histórico
+  Then o saldo da conta “Corrente” é de R$300,00
+  And o saldo da conta “Poupança” é de R$200,00
+  And a transação aparece no histórico de ambas as contas
 
-Scenario: Tentativa de transferência excedendo saldo disponível
-  Given o usuário tem saldo R$ 100,00
-  When ele tenta transferir R$ 200,00
-  Then o sistema deve exibir “Transferência não permitida – saldo insuficiente”
+Scenario Outline: Transferência não permitida por saldo insuficiente
+  Given o usuário está autenticado
+  And a conta “Corrente” tem saldo de R$<saldo>
+  When ele tenta transferir R$<valor> da “Corrente” para “Poupança”
+  Then o sistema exibe a mensagem de erro “Saldo insuficiente para esta transferência”
+  And a conta não é debitada
 
-Scenario: Transferência para conta inexistente
-  Given o usuário tenta transferir para a conta “123456789”
-  When ele confirma a operação
-  Then o sistema deve exibir “Conta destino não encontrada”
+  Examples:
+    | saldo | valor |
+    | 300   | 400   |
+    | 100   | 101   |
 ```
 
 ---
@@ -105,22 +97,17 @@ Scenario: Transferência para conta inexistente
 **Feature: Solicitação de Empréstimo**
 
 ```gherkin
-Scenario: Empréstimo aprovado
-  Given o usuário tem renda anual de R$ 100.000,00
-  And solicita um empréstimo de R$ 10.000,00
-  When a solicitação é processada
-  Then o sistema deve exibir “Empréstimo aprovado”
+Scenario: Usuário solicita empréstimo e recebe aprovação
+  Given o usuário está autenticado
+  When ele insere valor do empréstimo “R$10.000,00” e renda anual “R$80.000,00”
+  And submete a solicitação
+  Then o sistema exibe “Status: Aprovado”
 
-Scenario: Empréstimo negado por renda insuficiente
-  Given o usuário tem renda anual de R$ 20.000,00
-  And solicita um empréstimo de R$ 25.000,00
-  When a solicitação é processada
-  Then o sistema deve exibir “Empréstimo negado – renda insuficiente”
-
-Scenario: Validação de campo “valor do empréstimo” vazio
-  Given o usuário está na tela de solicitação de empréstimo
-  When ele deixa o campo “valor” em branco e clica em “Enviar”
-  Then o sistema deve exibir “O valor do empréstimo é obrigatório”
+Scenario: Usuário solicita empréstimo e recebe negação
+  Given o usuário está autenticado
+  When ele insere valor do empréstimo “R$50.000,00” e renda anual “R$30.000,00”
+  And submete a solicitação
+  Then o sistema exibe “Status: Negado”
 ```
 
 ---
@@ -128,42 +115,40 @@ Scenario: Validação de campo “valor do empréstimo” vazio
 **Feature: Pagamento de Contas**
 
 ```gherkin
-Scenario: Pagamento de conta futuro
-  Given o usuário selecionou um pagamento para o dia 15/09/2025
-  And informou beneficiário, endereço, cidade, estado, CEP, telefone, conta destino, valor e data
-  When ele confirma o pagamento
-  Then o pagamento deve aparecer no histórico de transações com status “Agendado”
-  And não deve ser debitado imediatamente
+Scenario: Usuário registra pagamento de conta com dados completos
+  Given o usuário está autenticado
+  When ele preenche: beneficiário="Empresa XYZ", endereço="Av. B, 200", cidade="São Paulo", estado="SP", CEP="01000‑000", telefone="(11) 91234‑5678", conta="1234-5", valor="R$250,00", data="2025‑10‑01"
+  And confirma o pagamento
+  Then o sistema registra “Pagamento confirmado”
+  And o pagamento aparece no histórico de transações
+  And a conta de destino é debitada do valor correspondente
 
-Scenario: Pagamento de conta com data no passado
-  Given o usuário tenta agendar um pagamento para 01/01/2023
-  When ele confirma a operação
-  Then o sistema deve exibir “A data deve ser futura”
-
-Scenario: Pagamento sem informar telefone
-  Given o usuário deixa o campo telefone em branco
-  When ele confirma o pagamento
-  Then o sistema deve exibir “Telefone do beneficiário é obrigatório”
+Scenario: Pagamento futuro respeita data de agendamento
+  Given o usuário está autenticado
+  When ele agenda pagamento de R$150,00 para “2025‑12‑15”
+  And confirma
+  Then o sistema exibe “Pagamento agendado para 15/12/2025”
+  And o pagamento só aparece no histórico após a data agendada
 ```
 
 ---
 
-**Feature: Navegação e Usabilidade**
+**Feature: Requisitos Gerais de Navegação e Usabilidade**
 
 ```gherkin
-Scenario: Todas as páginas carregam sem erros
-  Given o usuário navega por todas as páginas do sistema (Login, Cadastro, Conta, Transferência, Empréstimo, Pagamento)
-  Then nenhuma página deve apresentar erro de carregamento (404, 500 ou erro de script)
+Scenario: Todas as páginas carregam sem erros de navegação
+  Given o usuário está autenticado
+  When ele navega entre todas as páginas principais: “Conta”, “Transferência”, “Extrato”, “Empréstimo”, “Pagamento”
+  Then cada página carrega sem erros ou mensagens de “404”
 
-Scenario: Consistência de menus e links
-  Given o usuário acessa qualquer página
-  When ele verifica os menus de navegação
-  Then todos os menus e links devem ser os mesmos em todas as páginas
+Scenario: Mensagens de erro são claras e objetivas
+  Given o usuário tenta cadastrar conta com telefone inválido
+  When ele submete o formulário
+  Then a mensagem exibida deve ser “Telefone inválido. Use o formato (xx) xxxxx‑xxxx”
 
-Scenario: Mensagens de erro claras
-  Given o usuário faz um cadastro com e‑mail inválido
-  When ele tenta salvar
-  Then a mensagem de erro exibida deve indicar exatamente o problema (“Formato de e‑mail inválido”) e sugerir correção
+Scenario: Menus e links são consistentes em todas as páginas
+  Given o usuário está em qualquer página do ParaBank
+  When ele verifica o menu de navegação
+  Then ele encontra os mesmos itens: “Conta”, “Transferência”, “Extrato”, “Empréstimo”, “Pagamento”, “Sair”
+  And os links redirecionam para as páginas corretas
 ```
-
----
