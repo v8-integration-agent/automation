@@ -1,0 +1,56 @@
+name: Execucao de testes
+run-name: Running - Execução de testes
+ 
+on:
+  push:
+    branches: 
+      - feat-pipeline-conexao
+  workflow_dispatch:
+    
+jobs:
+  generate-and-test:
+    runs-on: ubuntu-latest
+ 
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v3
+ 
+      - name: Instalação de dependências Node
+        run: |
+          npm install --save-dev @types/node
+          npm install --save-dev @playwright/test typescript ts-node
+ 
+      - name: Instalação do Playwright
+        run: npx playwright install --with-deps
+ 
+      - name: Execução de testes Playwright
+        run: |
+          npx playwright test 
+        continue-on-error: true
+ 
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Install Python dependencies
+        run: |
+          pip install groq pytest pytest-bdd
+ 
+      - name: Listar resultados dos testes
+        run: ls -R test-results || echo "Nenhum arquivo encontrado"
+ 
+      - name: Gerar análises com IA
+        run: python ai/generate_analise.py
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+ 
+      - name: Commit análises
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add ai/analysis/*
+          git commit -m "🤖 Gerando analises e conselhos automáticos [skip ci]" || echo "Nada para commitar"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

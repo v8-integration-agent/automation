@@ -5,7 +5,8 @@ on:
   push:
     branches-ignore: 
       - main
-  workflow_dispatch:
+    paths:
+      - 'ai/requirements/criterios.md'
   
 jobs:
   generate-and-test:
@@ -28,17 +29,11 @@ jobs:
         run: python ai/generate_bdd.py
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-        continue-on-error: true
  
       - name: Generate Tests from BDD
         run: python ai/generate_tests_from_bdd.py
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-        continue-on-error: true
- 
-      - name: Run Tests
-        run: pytest ai/tests --maxfail=1 --disable-warnings -q
-        continue-on-error: true
 
       - name: Commit BDD and tests
         run: |
@@ -49,4 +44,3 @@ jobs:
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true

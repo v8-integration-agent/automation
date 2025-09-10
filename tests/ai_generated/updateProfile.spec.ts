@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../helpers/fixtures';
 import * as fs from 'fs';
 
 const HOME = 'https://parabank.parasoft.com/parabank/index.htm';
@@ -35,7 +35,7 @@ async function acessarProfile(page) {
   await expect(page.locator(updateProfileLocators.inputPhone)).toBeVisible();
 }
 
-test.describe('Atualização de Telefone', () => {
+
   test('Usuário deve atualizar telefone com sucesso', async ({ page }) => {
     await acessarProfile(page);
     await page.fill(updateProfileLocators.inputPhone, "11999999999");
@@ -50,4 +50,3 @@ test.describe('Atualização de Telefone', () => {
     await page.click(updateProfileLocators.botaoSalvar);
     await expect(page.locator(updateProfileLocators.phoneError)).toContainText('Phone is required.');
   });
-});

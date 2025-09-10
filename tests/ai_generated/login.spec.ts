@@ -1,4 +1,4 @@
-import { test, expect, } from '@playwright/test';
+import { test, expect } from '../helpers/fixtures';
 import * as fs from 'fs';
 
 const HOME = 'https://parabank.parasoft.com/parabank/index.htm';
@@ -25,7 +25,6 @@ test.afterEach(async ({}, testInfo) => {
   }
 });
 
-
 test.describe('Login no Parabank', () => {
   test('Login inválido', async ({ page }) => {
     await openHome(page);
@@ -35,7 +34,7 @@ test.describe('Login no Parabank', () => {
     await page.locator(LoginLocators.loginButton).click();
 
     await expect(page.locator(LoginLocators.errorMessage)).toContainText(
-     'An internal error has occurred and has been logged.'
+      'An internal error has occurred and has been logged.'
     );
   });
 
