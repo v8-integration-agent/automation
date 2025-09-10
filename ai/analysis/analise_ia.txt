@@ -1,0 +1,96 @@
+## 1. Quais testes falharam?
+
+| # | Teste | Log de falha | Status |
+|---|-------|--------------|--------|
+| 1 | **Login inválido** | “Login inválido falhou” | **Falhou** |
+| 2 | **Usuário deve atualizar telefone com campo vazio** | “Usuário deve atualizar telefone com campo vazio falhou” | **Falhou** |
+
+## 2. Por que cada falha ocorreu?
+
+### 2.1 Login inválido
+
+| Item | Descrição |
+|------|-----------|
+| **Mensagem esperada** | `"An internal error has occurred and has been logged."` |
+| **Mensagem real** | `"The username and password could not be verified."` |
+| **Erro** | O `expect(locator).toContainText` comparou duas strings diferentes. |
+| **Causa provável** | 1. O teste foi escrito com base na mensagem de erro genérica (interno), mas a aplicação está exibindo uma mensagem de erro de autenticação mais específica. <br>2. Pode haver um *i18n* ou *localização* diferente (português vs inglês) que não está sendo considerado. <br>3. A mensagem exibida pode mudar com base em um `debug` flag ou em ambientes (dev vs prod). |
+
+### 2.2 Usuário deve atualizar telefone com campo vazio
+
+| Item | Descrição |
+|------|-----------|
+| **Expectativa** | O elemento `//*[@id="phone-error"]` deve existir e conter o texto “Phone is required.” |
+| **Resultado** | `<element(s) not found>` – o selector não retornou nenhum elemento dentro do timeout de 5 s. |
+| **Causa provável** | 1. O elemento não está presente no DOM no momento da verificação (pode estar criado dinamicamente após um evento). <br>2. O `id` pode estar incorreto ou ter sido alterado (por ex.: `phone-error` vs `phone_error`). <br>3. O campo pode não disparar o erro porque a validação está no lado do servidor ou requer foco/blur. <br>4. O teste pode estar rodando em um ambiente onde o campo já está preenchido (state persiste entre testes). |
+
+## 3. Sugestões de correção
+
+### 3.1 Login inválido
+
+| Sugestão | Como aplicar |
+|----------|--------------|
+| **Ajustar a mensagem esperada** | Verifique a mensagem que realmente aparece na interface. Se a aplicação mudou de `"An internal error has occurred..."` para `"The username and password could not be verified."`, atualize o teste:<br>`await expect(locator('.error')).toContainText('The username and password could not be verified.');` |
+| **Usar `toHaveText` em vez de `toContainText`** | `toHaveText` exige igualdade exata (com opções de regex/trim) e evita falsos positivos. |
+| **Adicionar `await expect(locator('.error')).toBeVisible()` antes** | Garante que o elemento já está renderizado quando a verificação acontece. |
+| **Verificar idioma/localização** | Se o teste foi escrito para português e a aplicação mostra inglês, alinhe as duas versões ou use `toContainText(/Password|senha/)` para aceitar ambos. |
+| **Capturar screenshot na falha** | `await page.screenshot({ path: 'login-error.png' });` para analisar a UI no momento. |
+| **Verificar logs de servidor** | Se a mensagem “An internal error…” ainda aparece em alguns casos, pode haver erro de backend. Revise o endpoint `/login` e certifique-se de que não há exceções não tratadas. |
+
+> **Exemplo de código corrigido**  
+> ```ts
+> const errorMsg = locator('.error');
+> await expect(errorMsg).toBeVisible({ timeout: 8000 });   // esperar mais tempo se necessário
+> await expect(errorMsg).toHaveText(
+>   /The username and password could not be verified|An internal error has occurred/i,
+>   { timeout: 8000 }
+> );
+> ```
+
+### 3.2 Usuário deve atualizar telefone com campo vazio
+
+| Sugestão | Como aplicar |
+|----------|--------------|
+| **Verificar o seletor** | Use uma localização mais robusta: <br>`locator('[data-test-id="phone-error"]')` ou `locator('text=Phone is required.')`. |
+| **Aguardar a exibição do erro** | Se o erro aparece só após `blur` ou `submit`, simule esses eventos:<br>`await page.fill('#phone', ''); await page.press('#phone', 'Enter');` |
+| **Adicionar espera explícita** | `await expect(locator('//*[@id="phone-error"]')).toBeVisible({ timeout: 10000 });` |
+| **Confirmar que a validação está habilitada** | Verifique no código da aplicação se o atributo `required` está presente ou se a validação está ligada via JavaScript. |
+| **Separar estado de testes** | Use `await page.reload()` ou `await page.goto('/profile', { waitUntil: 'domcontentloaded' });` antes de cada teste para limpar estado anterior. |
+| **Capturar screenshot** | `await page.screenshot({ path: 'phone-error.png' });` |
+| **Testar em modo de depuração** | Rode o Playwright com `DEBUG=pw:api` e analise se o evento de erro dispara corretamente. |
+
+> **Exemplo de código corrigido**  
+> ```ts
+> // 1. Abra a página de atualização de perfil
+> await page.goto('/profile', { waitUntil: 'domcontentloaded' });
+>
+> // 2. Deixe o campo vazio e submeta o formulário
+> await page.click('#update-phone-btn'); // ou `await page.press('#phone', 'Enter');`
+>
+> // 3. Aguarde o erro aparecer
+> const phoneError = page.locator('#phone-error');
+> await expect(phoneError).toBeVisible({ timeout: 10000 });
+>
+> // 4. Verifique o texto
+> await expect(phoneError).toHaveText('Phone is required.');
+> ```
+
+## 4. Checklist de boas práticas
+
+| Item | Por que importa | Como garantir |
+|------|-----------------|---------------|
+| **Selção robusta** | Reduz flakiness. | Use atributos `data-test-id`, classes estáveis, ou textos legíveis. |
+| **Esperas explícitas** | Evita race conditions. | `await expect(locator).toBeVisible();` antes de interações ou verificações. |
+| **Isolamento de testes** | Garante que o estado anterior não influencia. | `await page.reload()` ou navegue para a página base em cada teste. |
+| **Logs claros** | Facilita debug. | Capture screenshots, use `console.log()` dentro dos testes para exibir valores reais. |
+| **Internacionalização** | Evita falhas por idioma. | Se houver suporte a vários idiomas, teste usando regex ou escolha o idioma explícito no `page.goto`. |
+
+## 5. Próximos passos
+
+1. **Atualizar as mensagens esperadas** de acordo com a UI real.  
+2. **Revisar os seletores** e substituí‑los por elementos estáveis.  
+3. **Adicionar esperas explícitas** e, se necessário, aumentar o timeout.  
+4. **Reexecutar** os testes com `DEBUG=pw:api` e analisar as capturas de tela.  
+5. **Corroborear** que a aplicação realmente exibe o erro esperado após os passos de teste (pode haver bug no próprio fluxo de validação).  
+
+Com essas correções os testes ficarão mais robustos e confiáveis. Boa sorte!
