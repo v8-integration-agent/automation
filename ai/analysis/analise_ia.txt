@@ -1,0 +1,95 @@
+**1. Teste que falhou**
+
+| Número | Descrição | Resultado |
+|--------|-----------|-----------|
+| 1 | **Usuário deve atualizar telefone com campo vazio** | **Falhou** |
+
+---
+
+**2. Motivo da falha**
+
+O erro reportado pelo Playwright é:
+
+```
+Error: expect(locator).toContainText(expected) failed
+Locator: locator('//*[@id="phone-error"]')
+Expected string: "Phone is required."
+Received: <element(s) not found>
+Timeout: 5000ms
+```
+
+Em palavras mais simples:
+
+- O teste está esperando que, ao submeter o formulário com o campo de telefone **vazio**, apareça um elemento com `id="phone-error"` contendo o texto *“Phone is required.”*  
+- O Playwright esperou 5 segundos (timeout padrão) para localizar esse elemento, mas **não encontrou nenhum**.
+
+As razões mais comuns para esse tipo de falha são:
+
+| Possível causa | Por que isso acontece? | Como identificar |
+|----------------|------------------------|-------------------|
+| **O formulário não foi submetido** | Se o botão de “Salvar/Enviar” não for clicado (ou a ação de submit não for disparada), o cliente JavaScript que gera a mensagem de erro nunca roda. | Verifique se há um `await page.click('#save')` ou `await page.press('#phone', 'Enter')` no teste. |
+| **O elemento de erro tem outro `id` ou está dentro de um *iframe*/**Shadow DOM** | Se a aplicação usa IDs dinâmicos, tem uma estrutura de *iframe* ou *shadow-root*, o seletor XPath que você usou não alcança o elemento. | Inspecione a página (DevTools) e veja o *DOM* real depois que a mensagem aparece. |
+| **A mensagem de erro está oculta ou ainda não foi renderizada** | Pode acontecer de o elemento existir, mas não ser visível ou ainda não ter sido adicionado ao DOM dentro dos 5 s. | Use `expect(locator).toHaveCount(1)` ou `toBeVisible` antes de `toContainText`. |
+| **O teste usa um *selector* errado (XPath vs CSS)** | XPath pode ser mais lento e menos robusto; se o atributo `id` não existir exatamente como `phone-error`, o seletor falha. | Troque por um seletor CSS: `await expect(page.locator('#phone-error')).toContainText('Phone is required.')`. |
+| **Timeout muito baixo** | Se a validação leva mais do que 5 s (ex.: API async, animações), o teste aborta antes de encontrar o elemento. | Aumente o timeout: `await expect(page.locator('#phone-error')).toContainText('Phone is required.', { timeout: 10000 });` |
+
+---
+
+**3. Sugestões de correção**
+
+Abaixo estão ações concretas que você pode executar, ordenadas por prioridade:
+
+| # | Ação | Como fazer | Por que ajuda |
+|---|------|------------|--------------|
+| 1 | **Verifique a submissão do formulário** | Assegure-se de que o teste realmente executa o submit (clicar no botão, pressionar Enter, etc.). Exemplo:<br>`await page.click('#update-phone-btn');` | Sem a submissão, a validação nunca é disparada. |
+| 2 | **Confirme o seletor** | Abra o DevTools, inspecione a mensagem de erro depois de submeter o formulário vazio, e copie o seletor CSS ou XPath exato. | Se o `id` não for `phone-error`, o seletor falhará. |
+| 3 | **Use um selector CSS em vez de XPath** | `const errorLocator = page.locator('#phone-error');` | CSS costuma ser mais rápido e robusto. |
+| 4 | **Adicione verificações de visibilidade / quantidade** | ```await expect(errorLocator).toHaveCount(1);<br>await expect(errorLocator).toBeVisible();``` | Garantir que o elemento está presente e visível antes de verificar o texto. |
+| 5 | **Ajuste o timeout** | ```await expect(errorLocator).toContainText('Phone is required.', { timeout: 12000 });``` | Se a validação demorar, o teste não abortará prematuramente. |
+| 6 | **Considere *iframe* ou *shadow-root*** | Se a aplicação usar iframes: `const frame = page.frame({ name: '...'});` <br> Se usar shadow DOM: `await page.locator('css=... >> shadow=#... >> #phone-error')` | Caso o elemento esteja encapsulado, você precisa “entrar” na estrutura antes de localizá‑lo. |
+| 7 | **Capture screenshot / trace quando falhar** | `await page.screenshot({ path: 'error.png' });` <br> `await context.tracing.stop({ path: 'trace.zip' });` | Ajudará a visualizar exatamente o que aparece na tela no momento da falha. |
+| 8 | **Reavalie se a mensagem deve aparecer** | Se a lógica de negócio mudou (por exemplo, a validação agora acontece somente após um clique adicional), ajuste o teste para refletir o novo fluxo. | Se o teste está testando um requisito antigo, ele pode continuar falhando. |
+
+---
+
+### Exemplo de código corrigido
+
+```ts
+// 1. Preencher o campo de telefone com vazio
+await page.fill('#phone', '');
+
+// 2. Submeter o formulário
+await page.click('#update-phone-btn');
+
+// 3. Esperar a mensagem de erro
+const phoneError = page.locator('#phone-error');
+await expect(phoneError).toHaveCount(1, { timeout: 8000 }); // garante que o elemento exista
+await expect(phoneError).toBeVisible(); // garante que esteja visível
+await expect(phoneError).toContainText('Phone is required.', { timeout: 8000 });
+```
+
+Se o elemento realmente estiver dentro de um *iframe*:
+
+```ts
+const frame = page.frame({ url: /dashboard/ }); // ou por nome
+const phoneError = frame.locator('#phone-error');
+```
+
+E se estiver dentro de *shadow-root*:
+
+```ts
+const shadowRoot = await page.$('my-component >> shadow-root');
+const phoneError = shadowRoot.locator('#phone-error');
+```
+
+---
+
+### Checklist rápido antes de reexecutar
+
+1. **Formulário realmente submetido?**  
+2. **Seletor correto?**  
+3. **Elemento visível?**  
+4. **Timeout suficiente?**  
+5. **Estrutura de DOM (iframe/shadow)?**  
+
+Com esses ajustes, o teste deverá passar ou, no mínimo, indicar claramente se a falha continua sendo de natureza de UI/UX (mensagem ausente) ou se algo mais está errado com a aplicação.
