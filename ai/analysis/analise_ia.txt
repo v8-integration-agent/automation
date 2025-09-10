@@ -1,118 +1,99 @@
-## 1. Testes que falharam  
+**Resumo dos testes que falharam**
 
-| # | Descrição do teste (nome que aparece no log) |
-|---|----------------------------------------------|
-| 1 | **Usuário deve atualizar telefone com campo vazio** |
-
-> O log mostra apenas um erro, portanto esse foi o único teste que falhou na execução reportada.
-
----
-
-## 2. Motivo de cada falha  
-
-### Teste 1 – “Usuário deve atualizar telefone com campo vazio”
-
-| Passo | O que o test está fazendo | O que aconteceu | Motivo provável |
-|-------|---------------------------|-----------------|----------------|
-| 1 | **Aguardar** o elemento `//*[@id="phone-error"]` | O Playwright esperou 5 s e não encontrou nenhum elemento | O seletor não corresponde a nenhum elemento na página |
-| 2 | **Verificar** o texto “Phone is required.” | A mensagem de erro não foi encontrada | O erro não foi exibido (pode ser porque a validação não foi disparada, o elemento está em outro id, ou o texto está diferente) |
-
-#### Possíveis causas técnicas
-
-1. **Seletor incorreto**  
-   - O `id` real pode não ser `phone-error`, pode estar com outro nome (`phoneError`, `error-phone`, etc.) ou o elemento pode estar dentro de um shadow‑DOM ou iframe que requer `frameLocator`.
-
-2. **Erro de idioma**  
-   - O texto esperado está em inglês (“Phone is required.”) enquanto o resto do teste (nome e mensagem de erro no log) está em português. Se a aplicação está configurada em português, o texto real pode ser “Telefone é obrigatório.”, “O telefone é obrigatório.” ou algo semelhante.
-
-3. **Validação não disparada**  
-   - O campo pode requerer um “blur” (perda de foco), um “submit” de formulário ou outro evento (ex.: mudança de página, clique em botão “Salvar”) antes de aparecer a mensagem de erro. Se o teste não executou essa ação, o erro não aparece.
-
-4. **Carregamento assíncrono**  
-   - O elemento pode levar mais de 5 s para renderizar (ex.: requisição Ajax que valida o número). O timeout padrão pode ser insuficiente.
-
-5. **Elemento visível mas não encontrado**  
-   - Se o elemento existir no DOM, mas estiver oculto (CSS `display:none` ou `visibility:hidden`), `toContainText` pode não reconhecê‑lo. O Playwright só inspeciona elementos visíveis por padrão, a não ser que `force:true` seja usado.
+| Nº | Descrição do teste | Motivo da falha |
+|----|---------------------|-----------------|
+| 1  | **Login válido falhou** | O seletor `#leftPanel > p` não encontrou nenhum elemento dentro de 5 s. |
+| 2  | **Usuário deve atualizar telefone com sucesso falhou** | O teste atingiu o limite de tempo de 10 s sem concluir. |
+| 3  | **Usuário deve atualizar telefone com campo vazio falhou** | Mesmo que o caso 2 – o teste não terminou antes do timeout de 10 s. |
 
 ---
 
-## 3. Sugestões de correção
+## 1. Análise detalhada de cada falha
 
-### 3.1. Verificar o seletor
+### 1️⃣ Login válido falhou
 
-```ts
-// Abra o devtools e encontre o elemento de erro
-const phoneErrorLocator = page.locator('#phone-error');  // ou '#phoneError', etc.
-
-// Se o elemento estiver dentro de iframe ou shadow‑DOM
-const frame = page.frame({ url: /iframe.*yourframe/ });
-const phoneErrorLocator = frame.locator('#phone-error');
+```
+Error: expect(locator).toContainText(expected) failed
+Locator: locator('#leftPanel > p')
+Expected string: "Welcome"
+Received: <element(s) not found>
+Timeout: 5000ms
 ```
 
-- **Teste de existência**:
+- **O que o Playwright tentou fazer?**  
+  Esperar que o elemento `#leftPanel > p` esteja presente e contenha o texto “Welcome” em até 5 s.
 
-  ```ts
-  await expect(phoneErrorLocator).toBeVisible({ timeout: 8000 }); // aumenta timeout se necessário
-  ```
+- **Por que não aconteceu?**  
+  * **Elemento não está na página** – a estrutura DOM pode ter mudado (por exemplo, o `<p>` está dentro de um `<iframe>` ou um shadow‑DOM).  
+  * **Elemento ainda não carregou** – a página pode estar em processo de renderização quando o teste foi disparado.  
+  * **Selector está incorreto** – `#leftPanel > p` pode estar errado (talvez seja `.left-panel p` ou `#leftPanel p`).
 
-### 3.2. Ajustar a expectativa de texto
+- **Efeito do timeout** – Quando o Playwright não encontra o elemento, ele lança “<element(s) not found>” e interrompe a verificação.
 
-```ts
-// Se o idioma é português
-await expect(phoneErrorLocator).toContainText('Telefone é obrigatório.');
-// Ou, para evitar falhas de acentuação, usar regex
-await expect(phoneErrorLocator).toContainText(/telefone.*obrigatório/i);
+### 2️⃣ Usuário deve atualizar telefone com sucesso falhou
+
+```
+Test timeout of 10000ms exceeded.
 ```
 
-### 3.3. Garantir que a validação seja disparada
+- **O que o Playwright tentou fazer?**  
+  Executar o fluxo de atualização de telefone (clica em “Editar”, insere número, confirma, etc.) e aguardar alguma condição de sucesso (por exemplo, mensagem de confirmação ou atualização da tela). O fluxo não concluiu em 10 s.
 
-```ts
-// 1. Limpe o campo
-await page.fill('#phone', '');
+- **Possíveis causas**  
+  * **Operação assíncrona não finalizada** – a API de atualização pode demorar mais que o esperado ou nunca retornar (network delay, erro 500).  
+  * **Elemento não interagível** – o botão “Salvar” pode estar desabilitado ou fora da viewport.  
+  * **Loop infinito** – algum `while` ou `for` no test ou na aplicação que nunca termina.  
+  * **Timeout genérico** – o test pode não ter configurado um timeout maior para chamadas de rede longas.
 
-// 2. Saia do campo (blur) ou clique no botão de salvar
-await page.press('#phone', 'Tab');
-// ou
-await page.click('#save-button');
+### 3️⃣ Usuário deve atualizar telefone com campo vazio falhou
 
-// 3. Agora espere pelo erro
-await expect(page.locator('#phone-error')).toBeVisible({ timeout: 8000 });
-```
-
-> Se o formulário tem um botão “Save”, “Submit” ou similar, certifique‑se de clicar nele antes de fazer a asserção.
-
-### 3.4. Aumentar timeout ou usar espera explícita
-
-```ts
-await expect(page.locator('#phone-error')).toContainText('Phone is required.', { timeout: 10000 });
-```
-
-ou
-
-```ts
-await page.waitForSelector('#phone-error', { state: 'visible', timeout: 10000 });
-```
-
-### 3.5. Revisar a lógica do teste
-
-- **Nome do teste**: Certifique‑se que o nome reflete o que está sendo verificado. Se o idioma da aplicação for português, o nome pode ser “Usuário deve atualizar telefone com campo vazio – exibe mensagem de erro em português”.
-- **Assertivas**: Em vez de `toContainText` (que procura texto dentro do elemento), use `toHaveText` se quiser comparar exatamente.
-
-```ts
-await expect(phoneErrorLocator).toHaveText('Phone is required.');
-```
+Mesmo cenário que o caso 2, mas com campo vazio. O timeout indica que a aplicação pode não ter retornado de forma assíncrona (por exemplo, exibir um erro de validação) dentro do limite.
 
 ---
 
-## 4. Checklist resumido
+## 2. Sugestões de correção
 
-| Item | Ação |
-|------|------|
-| 1 | Confirme o **id** ou caminho do elemento de erro. |
-| 2 | Verifique se o **texto** esperado corresponde ao idioma real da aplicação. |
-| 3 | Garanta que a validação seja acionada (blur, submit, click). |
-| 4 | Ajuste o **timeout** ou use `waitForSelector` antes de verificar. |
-| 5 | Se necessário, use `force: true` para interagir com elementos ocultos (não recomendado se não for intencional). |
-| 6 | Atualize o nome do teste para refletir o idioma e o comportamento. |
+### 2️⃣1. Corrigir o teste de login
 
-Com essas correções, o teste “Usuário deve atualizar telefone com campo vazio” deverá passar de forma confiável. Se o problema persistir, recomendo capturar uma **captura de tela** (`await page.screenshot()`) logo antes de falhar para inspeção visual do estado da página.
+| Passo | Como aplicar | Por que ajuda |
+|-------|--------------|---------------|
+| **a. Validar a estrutura DOM** | Abra a aplicação em um navegador, use a Ferramenta de Inspeção e verifique se o `<p>` com “Welcome” realmente existe em `#leftPanel`. Se estiver dentro de um iframe ou shadow‑DOM, adapte o seletor. | Garante que o selector aponta para o elemento certo. |
+| **b. Usar `page.waitForSelector`** | ```js\nawait page.waitForSelector('#leftPanel > p', { state: 'visible', timeout: 8000 });\n``` | Força o Playwright a esperar até que o elemento esteja visível antes de fazer a asserção. |
+| **c. Usar `expect(...).toHaveText` em vez de `toContainText`** | ```js\nawait expect(page.locator('#leftPanel > p')).toHaveText('Welcome');\n``` | `toHaveText` já incorpora a espera pelo elemento, reduzindo a necessidade de `waitFor`. |
+| **d. Verificar se o login realmente redireciona** | Antes da asserção, aguarde que a página esteja carregada: `await page.waitForURL('**/dashboard')`. | Garante que o teste só começa quando a navegação terminou. |
+| **e. Adicionar debug** | `await page.screenshot({ path: 'login-failure.png' });` | Permite visualizar a tela no ponto da falha. |
+
+### 2️⃣2. Corrigir os testes de atualização de telefone
+
+| Passo | Como aplicar | Por que ajuda |
+|-------|--------------|---------------|
+| **a. Aumentar o timeout do teste** | No Playwright: `test('...', async ({ page }) => { ... }, { timeout: 30000 });` | Dá mais tempo para a aplicação responder. |
+| **b. Esperar por resposta da API** | Se a aplicação faz um `fetch`/`XHR`, use `page.waitForResponse(url, { timeout: 20000 })`. | Garante que o teste só continua depois que a chamada de rede termina. |
+| **c. Verificar a presença de mensagens de erro ou sucesso** | ```js\nawait expect(page.locator('.toast-success')).toBeVisible();\n``` | Se a aplicação exibir uma notificação, o teste pode usar essa asserção em vez de esperar indefinidamente. |
+| **d. Garantir que o campo esteja habilitado** | ```js\nawait expect(page.locator('#phone-input')).toBeEnabled();\n``` | Se o campo está desabilitado, o teste não consegue digitar. |
+| **e. Verificar se o botão “Salvar” está visível e interagível** | ```js\nawait expect(page.locator('#save-btn')).toBeVisible();\nawait page.click('#save-btn');\n``` | Evita clicar em um botão invisível ou fora da viewport. |
+| **f. Inserir logs ou screenshots** | `await page.screenshot({ path: 'after-click.png' });` | Facilita a detecção de onde o fluxo travou. |
+| **g. Analisar o código da aplicação** | Se o timeout persiste, verifique se há chamadas longas ou loops no código (ex.: `while (!response.ok) { await delay(1000); }`). | Às vezes o problema está na própria aplicação, não no teste. |
+| **h. Usar `page.waitForLoadState('networkidle')`** | Após a navegação, aguarde que a rede esteja inativa: `await page.waitForLoadState('networkidle');` | Evita que o teste continue antes que todas as requisições tenham finalizado. |
+
+---
+
+## 3. Boas práticas para evitar futuros timeouts
+
+1. **Especifique timeouts maiores em testes que envolvem chamadas de rede** – `test('...', async ({ page }) => { ... }, { timeout: 20000 });`
+2. **Use esperas explícitas (`waitForSelector`, `waitForResponse`) ao invés de `expect(...).toHaveText` sem timeout** – isso deixa claro o que o teste está aguardando.
+3. **Evite usar seletores muito frágeis** – prefira data‑attributes (`data-testid="welcome-msg"`) em vez de hierarquia de tags.
+4. **Adicione screenshots/logs em pontos críticos** – isso facilita a investigação sem precisar reproduzir manualmente.
+5. **Verifique a configuração de proxy/Firewall** – se as chamadas de rede estiverem sendo bloqueadas, o teste pode nunca receber resposta.
+6. **Mantenha a aplicação em um ambiente estável** – atualizações de back‑end podem alterar tempos de resposta.
+
+---
+
+## 4. Próximos passos
+
+1. **Revisar e corrigir os seletores** – abra a aplicação e confirme a presença de `#leftPanel > p`.
+2. **Reescrever os testes de atualização de telefone** usando as sugestões acima e, se necessário, aumentar o timeout.
+3. **Rodar os testes novamente** e, caso persistam falhas, use `--debug` ou `page.screenshot` para capturar o estado da página.
+4. **Documentar** as mudanças em `README` ou em comentários nos testes para que a equipe saiba por que determinados timeouts ou seletores foram ajustados.
+
+Com essas correções e práticas, os testes devem passar com maior confiabilidade e será mais fácil identificar futuros problemas. 🚀
