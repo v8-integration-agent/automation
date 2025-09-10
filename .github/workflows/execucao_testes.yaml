@@ -4,7 +4,7 @@ run-name: Running - Execução de testes
 on:
   push:
     branches: 
-      - main
+      - test
   workflow_dispatch:
     
 jobs:
@@ -32,7 +32,6 @@ jobs:
         run: |
           pip install groq pytest pytest-bdd
 
- 
       - name: Execução de testes Playwright
         run: |
           npx playwright test 
