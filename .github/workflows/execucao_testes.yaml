@@ -41,7 +41,7 @@ jobs:
         run: ls -R test-results || echo "Nenhum arquivo encontrado"
  
       - name: Gerar análises com IA
-        run: python ai/generate_analise.py
+        run: python ai/generate/generate_analise.py
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
  
