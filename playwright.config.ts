@@ -3,7 +3,7 @@ import fs from "fs";
 
 export default defineConfig({
   testDir: './tests',
-  timeout: 60_000,
+  timeout: 10_000,
   retries: 0,
   reporter: [
     ['list'],
