@@ -1,220 +1,222 @@
-## Feature: Cadastro de Usuário
-
 ```gherkin
+# --------------------------------------
+# Feature: Cadastro de Usuário
+# --------------------------------------
 Feature: Cadastro de Usuário
   Como novo cliente do ParaBank
-  Quero registrar meus dados
-  Para poder acessar a conta
+  Quero registrar uma conta no sistema
+  Para que eu possa usar os serviços bancários
 
-  Scenario Outline: Cadastro com todos os campos obrigatórios preenchidos
-    Dado o usuário esteja na página de cadastro
-    Quando ele preencher o campo "<nome>" com "<valor_nome>"
-      E preencher o campo "<sobrenome>" com "<valor_sobrenome>"
-      E preencher o campo "<email>" com "<valor_email>"
-      E preencher o campo "<telefone>" com "<valor_telefone>"
-      E preencher o campo "<cep>" com "<valor_cep>"
-      E preencher o campo "<endereco>" com "<valor_endereco>"
-      E preencher o campo "<cidade>" com "<valor_cidade>"
-      E selecionar "<estado>" no dropdown de estado
-      E inserir a senha em "<senha>"
-      E inserir a senha novamente em "<confirmar_senha>"
-      E clicar no botão "Cadastrar"
-    Então a mensagem de sucesso deve ser exibida
-      E o usuário deve estar logado automaticamente
+  Background:
+    Dado que o usuário está na página de cadastro
+
+  Scenario: Cadastro bem‑sucesso
+    Quando preencho todos os campos obrigatórios com valores válidos
+    E envio o formulário
+    Then devo ver a mensagem “Cadastro concluído com sucesso”
+    And a opção de login deve estar habilitada
+
+  Scenario Outline: Validação de campos obrigatórios vazios
+    When deixo o campo "<campo>" em branco
+    And envio o formulário
+    Then vejo a mensagem de erro “<mensagem>”
 
     Examples:
-      | nome | sobrenome | valor_nome | valor_sobrenome | valor_email           | valor_telefone | valor_cep | valor_endereco | valor_cidade | estado | senha          | confirmar_senha |
-      | João | Silva     | João       | Silva           | joao.silva@email.com | 5511999999999  | 01001-000 | Rua A          | São Paulo    | SP     | senhaSegura1  | senhaSegura1   |
+      | campo              | mensagem                            |
+      | Nome               | Nome é obrigatório                   |
+      | Sobrenome          | Sobrenome é obrigatório              |
+      | Telefone           | Telefone é obrigatório               |
+      | CEP                | CEP é obrigatório                    |
+      | Email              | Email é obrigatório                  |
+      | Senha              | Senha é obrigatória                  |
+      | Confirmação Senha  | Confirmação da senha é obrigatória  |
 
-  Scenario Outline: Cadastro com campo inválido
-    Dado o usuário esteja na página de cadastro
-    Quando ele preencher o campo "<campo>" com "<valor>"
-      E preencher os demais campos com valores válidos
-      E clicar no botão "Cadastrar"
-    Então a mensagem de erro "<mensagem>" deve aparecer ao lado de "<campo>"
+  Scenario Outline: Validação de formatos inválidos
+    When insiro "<valor>" no campo "<campo>"
+    And envio o formulário
+    Then vejo a mensagem de erro “<mensagem>”
 
     Examples:
-      | campo     | valor              | mensagem                          |
-      | email     | usuario.com.br     | "Email inválido, por favor insira um email válido." |
-      | telefone  | abcdefg            | "Telefone inválido, deve conter apenas números."   |
-      | cep       | 123              | "CEP inválido, deve ter 8 dígitos no formato 00000-000." |
-```
+      | campo    | valor           | mensagem                      |
+      | Telefone | 123             | Telefone inválido             |
+      | CEP      | 12               | CEP inválido                  |
+      | Email    | usuario@       | Email inválido                |
 
-## Feature: Login
+  Scenario: Tentar cadastrar com e‑mail já existente
+    When uso o e‑mail “exemplo@parabank.com” já cadastrado
+    And envio o formulário
+    Then vejo a mensagem de erro “E‑mail já cadastrado”
 
-```gherkin
+# --------------------------------------
+# Feature: Login
+# --------------------------------------
 Feature: Login
-  Como cliente já cadastrado
-  Quero me autenticar no ParaBank
-  Para acessar meu dashboard
+  Como usuário cadastrado
+  Quero fazer login no ParaBank
+  Para acessar minha conta
 
-  Scenario: Login bem-sucedido com credenciais válidas
-    Dado o usuário esteja na página de login
-    Quando ele digitar "<email>" no campo "Email"
-      E digitar "<senha>" no campo "Senha"
-      E clicar no botão "Entrar"
-    Então o usuário deve ser redirecionado para a página inicial da conta
-      E o cabeçalho deve conter "Olá, <nome>"
+  Background:
+    Dado que o usuário está na página de login
 
-    Examples:
-      | email                   | senha          | nome  |
-      | joao.silva@email.com    | senhaSegura1   | João  |
+  Scenario: Login com credenciais válidas
+    When insero e‑mail “usuario@parabank.com” e senha “senhaSegura”
+    And clico em “Login”
+    Then o sistema deve redirecionar para a página inicial da conta
+    And exibir “Bem‑vindo, usuário”
 
-  Scenario Outline: Login falhou com credenciais inválidas
-    Dado o usuário esteja na página de login
-    Quando ele digitar "<email>" no campo "Email"
-      E digitar "<senha>" no campo "Senha"
-      E clicar no botão "Entrar"
-    Então a mensagem de erro "<mensagem>" deve aparecer
+  Scenario Outline: Login com credenciais inválidas
+    When insero e‑mail “<email>” e senha “<senha>”
+    And clico em “Login”
+    Then vejo a mensagem de erro “<mensagem>”
 
     Examples:
-      | email                   | senha     | mensagem                                  |
-      | joao.silva@email.com    | errada    | "Credenciais inválidas, tente novamente." |
-      | invalido@email.com      | senhaSegura1 | "Usuário não encontrado."                |
-```
+      | email               | senha        | mensagem                        |
+      | usuário@parabank.com | wrongpass   | Credenciais inválidas           |
+      | wrong@parabank.com   | senhaSegura | Credenciais inválidas           |
+      | (vazio)              | senhaSegura | Email é obrigatório             |
+      | usuário@parabank.com | (vazio)     | Senha é obrigatória             |
 
-## Feature: Acesso à Conta – Saldo e Extrato
-
-```gherkin
+# --------------------------------------
+# Feature: Acesso à Conta – Saldo e Extrato
+# --------------------------------------
 Feature: Acesso à Conta – Saldo e Extrato
   Como cliente autenticado
-  Quero ver meu saldo e extrato
-  Para acompanhar minhas finanças
+  Quero ver saldo atualizado e extrato
+  Para controlar minhas finanças
 
-  Scenario: Visualizar saldo atualizado após operação de crédito
-    Dado o usuário esteja na página inicial da conta
-      E o saldo atual seja "<saldo_atual>"
-    Quando o usuário receber um depósito de "<valor_deposito>"
-    Então o saldo deve ser "<saldo_esperado>"
-      E a transação de depósito deve aparecer no extrato
+  Background:
+    Dado que o usuário está autenticado
+    E a página inicial da conta está visível
 
-    Examples:
-      | saldo_atual | valor_deposito | saldo_esperado |
-      | 1.000,00     | 500,00          | 1.500,00        |
+  Scenario: Visualizar saldo atualizado
+    Then a tela deve exibir o saldo atual “R$ 10.000,00”
 
-  Scenario: Extrato exibe transações em ordem cronológica
-    Dado o usuário esteja na página de extrato
-      E o extrato contenha as seguintes transações:
-        | Data       | Descrição           | Valor   |
-        | 01/05/2025 | Transferência       | -200,00 |
-        | 02/05/2025 | Depósito            | +300,00 |
-    Quando a página carregar
-    Então as transações devem estar ordenadas do mais recente ao mais antigo
-```
+  Scenario: Extrato listado em ordem cronológica
+    When acesso a aba “Extrato”
+    Then vejo a lista de transações em ordem decrescente (mais recente primeiro)
+    And cada transação exibe data, descrição, valor e saldo
 
-## Feature: Transferência de Fundos
-
-```gherkin
+# --------------------------------------
+# Feature: Transferência de Fundos
+# --------------------------------------
 Feature: Transferência de Fundos
   Como cliente autenticado
-  Quero transferir valores entre minhas contas
-  Para movimentar meu dinheiro
+  Quero transferir dinheiro entre contas
+  Para gerenciar meu patrimônio
 
-  Scenario: Transferência válida entre duas contas
-    Dado o usuário esteja na página de transferência
-      E a conta origem possua saldo "<saldo_orig>"
-      E a conta destino exista
-    Quando o usuário selecionar conta origem "<conta_origem>"
-      E selecionar conta destino "<conta_destino>"
-      E digitar valor "<valor>"
-      E confirmar a transferência
-    Then o saldo da conta origem deve ser "<saldo_final_origem>"
-      E o saldo da conta destino deve ser "<saldo_final_destino>"
-      E a transação deve aparecer no histórico de ambas as contas
+  Background:
+    Dado que o usuário tem saldo “R$ 10.000,00” na conta “Corrente”
 
-    Examples:
-      | saldo_orig | conta_origem | conta_destino | valor | saldo_final_origem | saldo_final_destino |
-      | 1.000,00   | 123456-1     | 654321-9      | 200,00 | 800,00             | 200,00              |
+  Scenario: Transferência bem‑sucesso
+    When seleciono origem “Corrente”
+    And destino “Poupança”
+    And monto “R$ 1.000,00”
+    And confirmo a transferência
+    Then o saldo da conta “Corrente” deve ser “R$ 9.000,00”
+    And o saldo da conta “Poupança” deve ser “R$ 1.000,00”
+    And a transação aparece no histórico de ambas as contas
 
-  Scenario: Transferência falhou por saldo insuficiente
-    Dado o usuário esteja na página de transferência
-      E a conta origem possua saldo "<saldo_orig>"
-    Quando o usuário selecionar conta origem "<conta_origem>"
-      E digitar valor "<valor>"
-      E confirmar a transferência
-    Then a mensagem de erro "<mensagem>" deve ser exibida
-      E o saldo da conta origem permanece inalterado
+  Scenario: Transferência com valor superior ao saldo
+    When seleciono origem “Corrente”
+    And destino “Poupança”
+    And monto “R$ 20.000,00”
+    And confirmo a transferência
+    Then vejo a mensagem de erro “Saldo insuficiente”
 
-    Examples:
-      | saldo_orig | conta_origem | valor | mensagem                          |
-      | 100,00     | 123456-1     | 200,00 | "Saldo insuficiente para esta transferência." |
-```
-
-## Feature: Solicitação de Empréstimo
-
-```gherkin
+# --------------------------------------
+# Feature: Solicitação de Empréstimo
+# --------------------------------------
 Feature: Solicitação de Empréstimo
   Como cliente autenticado
   Quero solicitar um empréstimo
-  Para aumentar meu poder de compra
+  Para financiar projetos
 
-  Scenario Outline: Solicitação de empréstimo com aprovação ou negação
-    Dado o usuário esteja na página de solicitação de empréstimo
-    Quando ele informar valor "<valor_emprestimo>" e renda anual "<renda_anual>"
-      E submeter a solicitação
-    Então o sistema deve retornar status "<status>"
-      E o usuário deve ver a mensagem "<mensagem>"
+  Background:
+    Dado que o usuário está na aba “Empréstimo”
 
-    Examples:
-      | valor_emprestimo | renda_anual | status | mensagem                        |
-      | 5.000,00         | 80.000,00   | Aprovado | "Seu empréstimo foi aprovado!"  |
-      | 20.000,00        | 30.000,00   | Negado   | "Desculpe, não podemos aprovar seu empréstimo." |
-```
+  Scenario: Empréstimo aprovado
+    When informo valor “R$ 50.000,00”
+    And renda anual “R$ 120.000,00”
+    And envio a solicitação
+    Then o sistema retorna “Empréstimo Aprovado”
 
-## Feature: Pagamento de Contas
+  Scenario: Empréstimo negado por renda insuficiente
+    When informo valor “R$ 100.000,00”
+    And renda anual “R$ 50.000,00”
+    And envio a solicitação
+    Then o sistema retorna “Empréstimo Negado”
 
-```gherkin
+# --------------------------------------
+# Feature: Pagamento de Contas
+# --------------------------------------
 Feature: Pagamento de Contas
   Como cliente autenticado
-  Quero registrar e agendar pagamentos de contas
-  Para manter minhas contas em dia
+  Quero registrar pagamentos
+  Para manter contas em dia
 
-  Scenario: Pagamento futuro agendado
-    Dado o usuário esteja na página de pagamento de contas
-    Quando ele preencher:
-      | Campo          | Valor                    |
-      | Beneficiário   | Conta de Energia        |
-      | Endereço       | Rua X, 100              |
-      | Cidade         | São Paulo               |
-      | Estado         | SP                       |
-      | CEP            | 01001-000                |
-      | Telefone       | 5511999999999            |
-      | Conta destino  | 123456-1                 |
-      | Valor          | 150,00                   |
-      | Data           | 15/06/2025 (futuro)      |
-      Then o pagamento deve ser incluído no histórico de transações
-        E a data de pagamento futura deve ser respeitada
+  Background:
+    Dado que o usuário está na aba “Pagamentos”
 
-  Scenario: Pagamento com data retroativa
-    Dado o usuário esteja na página de pagamento de contas
-    Quando ele definir a data de pagamento como "01/01/2025" (passado)
-      E submeter o pagamento
-    Then a mensagem de erro "Data de pagamento não pode ser passada." deve aparecer
-```
+  Scenario: Pagamento de conta futuro
+    When preencho beneficiário “Energia”
+    And endereço “Rua X, 123”
+    And cidade “São Paulo”
+    And estado “SP”
+    And CEP “01000-000”
+    And telefone “(11) 99999-8888”
+    And conta de destino “Conta Energia”
+    And valor “R$ 200,00”
+    And data “2025-10-15”
+    And confirmo o pagamento
+    Then vejo a mensagem “Pagamento agendado com sucesso”
+    And o pagamento aparece no histórico com status “Agendado”
 
-## Feature: Requisitos Gerais de Navegação e Usabilidade
+  Scenario: Pagamento imediato
+    When preencho os mesmos dados do cenário anterior
+    And data “2025-09-12” (data atual)
+    And confirmo o pagamento
+    Then o saldo da conta deve ser debitado “R$ 200,00”
+    And o histórico mostra a transação com status “Pago”
 
-```gherkin
+  Scenario Outline: Dados obrigatórios vazios
+    When deixo o campo "<campo>" em branco
+    And confirmo o pagamento
+    Then vejo a mensagem de erro “<mensagem>”
+
+    Examples:
+      | campo           | mensagem                        |
+      | Beneficiário    | Beneficiário é obrigatório      |
+      | Endereço        | Endereço é obrigatório           |
+      | Cidade          | Cidade é obrigatória            |
+      | Estado          | Estado é obrigatório             |
+      | CEP             | CEP é obrigatório                |
+      | Telefone        | Telefone é obrigatório           |
+      | Conta Destino   | Conta de destino é obrigatória  |
+      | Valor           | Valor é obrigatório              |
+      | Data            | Data é obrigatória              |
+
+# --------------------------------------
+# Feature: Navegação e Usabilidade
+# --------------------------------------
 Feature: Navegação e Usabilidade
-  Como cliente
-  Quero que todas as páginas sejam navegáveis sem erros
-  Para ter uma experiência de uso agradável
+  Como usuário do ParaBank
+  Quero que a navegação seja consistente e livre de erros
+  Para usar o sistema sem frustrações
 
-  Scenario: Carregamento correto de todas as páginas principais
-    Dado o usuário esteja autenticado
-    Quando ele acessar cada uma das páginas: Dashboard, Saldo, Extrato, Transferência, Empréstimo, Pagamento
-    Então cada página deve carregar sem erros e exibir os componentes corretos
+  Scenario: Links e menus acessíveis em todas as páginas
+    When navego pela aplicação
+    Then todos os menus devem estar visíveis
+    And cada link deve redirecionar corretamente
 
-  Scenario: Consistência de menus e links
-    Dado o usuário esteja em qualquer página
-    Quando ele clicar no link "Contas" no menu
-    Then ele deve ser redirecionado para a página de contas
-      E o mesmo link deve funcionar em todas as outras páginas
+  Scenario: Mensagens de erro claras
+    When realizo qualquer operação inválida
+    Then as mensagens exibidas são curtas, claras e informativas
 
-  Scenario: Mensagens de erro claras e objetivas
-    Dado o usuário esteja na página de login
-    Quando ele tentar login com senha vazia
-    Then a mensagem "Senha é obrigatória." deve ser exibida de forma destacada
+  Scenario: Carregamento de páginas sem erros
+    When acesso cada página do sistema
+    Then a página carrega dentro de 5 segundos
+    And não há mensagens de erro de navegação
+
 ```
 
-Esses cenários cobrem todos os requisitos de aceite descritos no documento, incluindo fluxos positivos, negativos e de erro, além das validações de usabilidade e navegação.
+Esses cenários cobrem os critérios de aceite descritos: cadastro, login, visualização de saldo/extrato, transferências, empréstimos, pagamentos, e requisitos gerais de navegação e usabilidade. Cada cenário está estruturado em *Given‑When‑Then*, permitindo que as equipes de teste automatizem e validem as funcionalidades de forma consistente.
