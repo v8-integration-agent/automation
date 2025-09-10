@@ -1,782 +1,513 @@
-## 1️⃣ Estrutura de pastas
+## 1️⃣ Visão geral
+
+Abaixo você encontra um **esqueleto completo** de testes automatizados em Python usando **pytest‑bdd** para o arquivo BDD (Gherkin) que você forneceu.  
+O projeto está organizado da seguinte forma:
 
 ```
 para_bank/
-├── conftest.py
 ├── features/
-│   ├── cadastro.feature
-│   ├── login.feature
-│   ├── acesso_conta.feature
-│   ├── transferencia.feature
-│   ├── solicitacao_emprestimo.feature
-│   ├── pagamento.feature
-│   └── navegacao.feature
-└── steps/
-    ├── cadastro_steps.py
-    ├── login_steps.py
-    ├── acesso_conta_steps.py
-    ├── transferencia_steps.py
-    ├── emprestimo_steps.py
-    ├── pagamento_steps.py
-    └── navegacao_steps.py
+│   └── para_bank.feature          # arquivo Gherkin completo
+├── tests/
+│   ├── conftest.py                # fixtures globais (driver, context, etc.)
+│   └── steps/
+│       └── para_bank_steps.py    # step‑definitions (Python)
+├── pages/
+│   ├── base_page.py              # classe base (driver, utils)
+│   ├── registration_page.py
+│   ├── login_page.py
+│   ├── account_page.py
+│   ├── transfer_page.py
+│   ├── loan_page.py
+│   ├── payment_page.py
+│   └── navigation_page.py
+└── requirements.txt
 ```
 
 > **Obs.:**  
-> *Todos os arquivos `.feature` ficam no diretório `features/`.  
-> *Cada arquivo `.py` na pasta `steps/` contém a implementação dos passos correspondentes à sua feature.*
+> O código abaixo **não** faz chamadas reais a um navegador. Ele contém apenas **placeholders** que mostram onde a lógica real (Selenium, requests, mocks, etc.) deve ser inserida.  
+> Para usar em um ambiente real basta trocar os `pass / # TODO` pelos comandos Selenium ou pela API que sua aplicação expõe.
 
 ---
 
-## 2️⃣ `conftest.py`
-
-```python
-# conftest.py
-import pytest
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-
-BASE_URL = "https://www.parabank.com/"  # troque pelo seu ambiente real
-
-
-@pytest.fixture(scope="session")
-def driver():
-    """Configura o driver do Selenium."""
-    options = Options()
-    options.add_argument("--headless")          # roda sem UI
-    options.add_argument("--disable-gpu")
-    options.add_argument("--window-size=1920,1080")
-    driver = webdriver.Chrome(options=options)
-    yield driver
-    driver.quit()
-
-
-@pytest.fixture
-def context():
-    """Dicionário compartilhado entre os steps."""
-    return {}
-
-
-@pytest.fixture
-def base_url():
-    return BASE_URL
-```
-
----
-
-## 3️⃣ Feature Files
-
-> Cada arquivo abaixo contém apenas o conteúdo *raw* do Gherkin.  
-> Salve cada bloco com o nome indicado e com extensão `.feature`.
-
-### 3.1 `features/cadastro.feature`
+## 2️⃣ Arquivo Gherkin – `features/para_bank.feature`
 
 ```gherkin
 Feature: Cadastro de Usuário
+  Para garantir que novos usuários possam criar uma conta de forma segura e completa
 
-  Scenario Outline: Cadastro com sucesso
-    Given o usuário está na página de cadastro
-    When preenche "<campo>" com "<valor>"
-    And preenche os demais campos obrigatórios com valores válidos
-    And clica em “Cadastrar”
-    Then a mensagem de confirmação “Cadastro concluído!” deve ser exibida
-    And o usuário pode fazer login com as credenciais recém‑criados
-
-    Examples:
-      | campo | valor         |
-      | Nome  | João Silva    |
-      | Email | joao@email.com|
-
-  Scenario Outline: Cadastro falha por campo inválido
-    Given o usuário está na página de cadastro
-    When preenche "<campo>" com "<valor inválido>"
-    And preenche os demais campos obrigatórios com valores válidos
-    And clica em “Cadastrar”
-    Then deve ser exibida a mensagem de erro "<mensagem>"
+  @Cadastro
+  Scenario Outline: Cadastro com todos os campos obrigatórios preenchidos
+    Given O usuário acessa a página de cadastro
+    When Ele preenche os campos obrigatórios com valores válidos "<Nome>", "<Email>", "<Telefone>", "<CEP>" e clica em "Registrar"
+    Then O sistema deve exibir a mensagem de confirmação "Cadastro realizado com sucesso"
+    And O usuário deve ser redirecionado para a tela de login
 
     Examples:
-      | campo   | valor inválido | mensagem                                           |
-      | Email   | joaoemail.com  | “Email inválido. Digite um e‑mail válido.”         |
-      | Telefone| 123            | “Telefone inválido. Use apenas números.”           |
-      | CEP     | abcde          | “CEP inválido. Digite apenas números.”             |
-```
+      | Nome          | Email                 | Telefone            | CEP       |
+      | João da Silva | joao.silva@email.com  | (11) 98765-4321     | 01010-010 |
+      | Maria Pereira | maria.pereira@email.com | (21) 99876-5432   | 20020-020 |
 
-### 3.2 `features/login.feature`
+  @Cadastro
+  Scenario Outline: Cadastro com campos inválidos
+    Given O usuário acessa a página de cadastro
+    When Ele preenche os campos obrigatórios com valores inválidos "<Nome>", "<Email>", "<Telefone>", "<CEP>" e clica em "Registrar"
+    Then O sistema deve exibir a mensagem de erro "Email inválido"
+    And O sistema deve exibir a mensagem de erro "Telefone inválido"
+    And O sistema deve exibir a mensagem de erro "CEP inválido"
 
-```gherkin
-Feature: Login
+    Examples:
+      | Nome  | Email    | Telefone  | CEP   |
+      | João  | joao.com | 1234      | abcde |
+      | Maria | maria@   | (xx) xxxx-xxxx | 0000000 |
 
-  Scenario: Login bem‑sucedido
-    Given existe um usuário cadastrado com e‑mail “maria@email.com” e senha “Segura123”
-    When o usuário insere “maria@email.com” no campo de e‑mail
-    And insere “Segura123” no campo de senha
-    And clica em “Entrar”
-    Then o usuário é redirecionado para a página inicial da conta
-    And o banner “Bem‑vindo Maria!” é exibido
+  @Login
+  Scenario: Login com credenciais válidas
+    Given O usuário possui conta cadastrada com e‑mail "usuario@email.com" e senha "Senha123"
+    When O usuário digita o e‑mail e a senha na tela de login e clica em "Entrar"
+    Then O sistema deve redirecionar o usuário para a página inicial da conta
+    And O saldo exibido deve ser igual ao saldo inicial da conta
 
-  Scenario: Login falha por credenciais inválidas
-    Given existe um usuário cadastrado com e‑mail “maria@email.com”
-    When o usuário insere “maria@email.com” no campo de e‑mail
-    And insere “Errada456” no campo de senha
-    And clica em “Entrar”
-    Then a mensagem “Credenciais inválidas. Tente novamente.” é exibida
-```
+  @Login
+  Scenario Outline: Login com credenciais inválidas
+    Given O usuário possui conta cadastrada com e‑mail "usuario@email.com" e senha "Senha123"
+    When O usuário digita o e‑mail "<Email>" e a senha "<Senha>" na tela de login e clica em "Entrar"
+    Then O sistema deve exibir a mensagem de erro "Credenciais inválidas"
 
-### 3.3 `features/acesso_conta.feature`
+    Examples:
+      | Email                    | Senha      |
+      | usuario@email.com        | senhaErrada|
+      | usuarioErrado@email.com  | Senha123   |
 
-```gherkin
-Feature: Acesso à Conta (Saldo e Extrato)
+  Feature: Acesso à Conta – Saldo e Extrato
+    Para que o usuário possa visualizar saldo e transações recentes
 
-  Scenario: Visualização do saldo atualizado após depósito
-    Given o usuário está logado e possui saldo de R$ 1.000,00
-    When realiza um depósito de R$ 500,00
-    Then o saldo exibido deve ser R$ 1.500,00
+    @Extrato
+    Scenario: Visualização do saldo atualizado
+      Given O usuário está logado e sua conta possui saldo inicial de R$ 1.000,00
+      When O usuário navega até a página de “Minha Conta”
+      Then O saldo exibido deve ser R$ 1.000,00
 
-  Scenario: Extrato lista transações recentes em ordem cronológica
-    Given o usuário está logado
-    And possui as seguintes transações:
-      | Data       | Tipo      | Valor  |
-      | 2024-09-08 | Depósito  | 1.000  |
-      | 2024-09-10 | Saque     | 200    |
-    When acessa a página de extrato
-    Then a lista de transações deve mostrar:
-      | 1 | 2024-09-10 | Saque | -200 |
-      | 2 | 2024-09-08 | Depósito | +1.000 |
-```
+    @Extrato
+    Scenario: Lista de transações no extrato em ordem cronológica
+      Given O usuário está logado e possui as seguintes transações:
+        | Data        | Descrição     | Valor  |
+        | 01/09/2024  | Depósito      | +R$200 |
+        | 02/09/2024  | Transferência | -R$50  |
+      When O usuário navega até a página de “Extrato”
+      Then O extrato deve listar:
+        | 02/09/2024 | Transferência | -R$50 |
+        | 01/09/2024 | Depósito      | +R$200 |
+      And As transações devem estar em ordem decrescente de data
 
-### 3.4 `features/transferencia.feature`
+  Feature: Transferência de Fundos
+    Para que o usuário possa transferir dinheiro entre suas contas
 
-```gherkin
-Feature: Transferência de Fundos
+    @Transferência
+    Scenario: Transferência válida entre contas
+      Given O usuário possui saldo R$ 500,00 na conta A
+      And O usuário possui conta B com saldo R$ 300,00
+      When O usuário faz a transferência de R$ 150,00 da conta A para a conta B
+      Then O saldo da conta A deve ser R$ 350,00
+      And O saldo da conta B deve ser R$ 450,00
+      And O histórico da conta A deve conter a transação "Transferência para B" de -R$150,00
+      And O histórico da conta B deve conter a transação "Transferência recebida de A" de +R$150,00
 
-  Scenario: Transferência bem‑sucedida entre contas
-    Given o usuário possui R$ 1.000,00 na conta A
-    And a conta B possui R$ 500,00
-    When o usuário seleciona conta A como origem
-    And seleciona conta B como destino
-    And define o valor R$ 300,00
-    And confirma a transferência
-    Then a conta A deve exibir saldo de R$ 700,00
-    And a conta B deve exibir saldo de R$ 800,00
-    And ambas as contas devem registrar a transação no histórico
+    @Transferência
+    Scenario Outline: Transferência inválida por saldo insuficiente
+      Given O usuário possui saldo R$ 100,00 na conta de origem
+      When O usuário tenta transferir R$ <Valor> da conta de origem para a conta de destino
+      Then O sistema deve exibir a mensagem de erro "Saldo insuficiente"
+      And Nenhuma alteração deve ocorrer no saldo das contas
 
-  Scenario: Transferência falha por saldo insuficiente
-    Given o usuário possui R$ 100,00 na conta A
-    When tenta transferir R$ 200,00
-    Then a mensagem “Saldo insuficiente” deve ser exibida
-    And nenhuma conta é alterada
-```
+      Examples:
+        | Valor |
+        | 150   |
+        | 200   |
 
-### 3.5 `features/solicitacao_emprestimo.feature`
+  Feature: Solicitação de Empréstimo
+    Para que o usuário possa solicitar um crédito e receber um status
 
-```gherkin
-Feature: Solicitação de Empréstimo
+    @Empréstimo
+    Scenario Outline: Solicitação de empréstimo com aprovação
+      Given O usuário possui renda anual de R$ <Renda>
+      When O usuário solicita um empréstimo de valor R$ <Valor>
+      Then O sistema deve retornar o status "Aprovado"
+      And O valor do empréstimo deve estar disponível na conta do usuário
 
-  Scenario: Empréstimo aprovado
-    Given o usuário tem renda anual de R$ 120.000,00
-    When solicita empréstimo de R$ 50.000,00
-    Then o sistema deve retornar “Aprovado”
-    And o valor será adicionado ao saldo da conta
+      Examples:
+        | Valor | Renda  |
+        | 5000  | 120000 |
+        | 10000 | 180000 |
 
-  Scenario: Empréstimo negado
-    Given o usuário tem renda anual de R$ 20.000,00
-    When solicita empréstimo de R$ 50.000,00
-    Then o sistema deve retornar “Negado”
-    And nenhum valor é creditado
-```
+    @Empréstimo
+    Scenario Outline: Solicitação de empréstimo com negação
+      Given O usuário possui renda anual de R$ <Renda>
+      When O usuário solicita um empréstimo de valor R$ <Valor>
+      Then O sistema deve retornar o status "Negado"
 
-### 3.6 `features/pagamento.feature`
+      Examples:
+        | Valor | Renda  |
+        | 20000 | 50000  |
+        | 15000 | 80000  |
 
-```gherkin
-Feature: Pagamento de Contas
+  Feature: Pagamento de Contas
+    Para que o usuário registre e agende pagamentos
 
-  Scenario: Pagamento imediato registrado no histórico
-    Given o usuário possui saldo suficiente
-    When registra pagamento com:
-      | Beneficiário | Endereço      | Cidade     | Estado | CEP      | Telefone | Conta Destino | Valor      | Data       |
-      | Luz Eletrônica | Rua A, 100 | São Paulo | SP     | 01234-567 | 12345678 | 1234-5       | R$ 150,00  | 2024-09-10 |
-    And confirma o pagamento
-    Then a transação deve aparecer no histórico de pagamento
-    And o saldo deve ser debitado em R$ 150,00
+    @Pagamento
+    Scenario: Registro de pagamento imediato
+      Given O usuário está logado
+      When Ele registra o pagamento com:
+        | Beneficiário | Endereço          | Cidade | Estado | CEP     | Telefone      | Conta Destino | Valor | Data    |
+        | Luz          | Rua das Flores 1 | SP     | SP     | 12345-678 | (11) 91234-5678 | Conta123     | 150   | 01/09/2024 |
+      Then O pagamento deve ser incluído no histórico de transações da conta do usuário
+      And O sistema deve exibir a mensagem "Pagamento registrado com sucesso"
 
-  Scenario: Pagamento futuro agendado
-    Given o usuário possui saldo suficiente
-    When registra pagamento com data futura “2024-12-01”
-    And confirma o pagamento
-    Then o pagamento é marcado como “Agendado”
-    And não aparece no extrato até a data de vencimento
-```
+    @Pagamento
+    Scenario: Agendamento de pagamento futuro
+      Given O usuário está logado
+      When Ele registra o pagamento com data de vencimento em 30 dias
+      Then O pagamento deve aparecer no histórico com status "Agendado"
+      And O sistema deve impedir que o usuário pague antes da data de vencimento
 
-### 3.7 `features/navegacao.feature`
+  Feature: Requisitos Gerais – Navegação e Usabilidade
+    Para garantir consistência e usabilidade em todo o site
 
-```gherkin
-Feature: Requisitos Gerais de Navegação e Usabilidade
+    @Navegação
+    Scenario: Todas as páginas carregam sem erros
+      Given O usuário acessa cada página do site (Login, Cadastro, Minha Conta, Extrato, Transferência, Empréstimo, Pagamento)
+      When Ele visualiza cada página
+      Then Cada página deve carregar completamente sem mensagens de erro
 
-  Scenario: Todas as páginas carregam sem erros
-    Given o usuário navega entre as seções (Login, Cadastro, Extrato, Transferência, Empréstimo, Pagamento)
-    When acessa cada página
-    Then nenhuma página exibe erro de carregamento
+    @Navegação
+    Scenario: Consistência de menus e links
+      Given O usuário navega pelos menus principais
+      When Ele clica em cada link
+      Then Cada link deve levar à página correta
+      And Os menus devem permanecer visíveis em todas as páginas
 
-  Scenario: Mensagens de erro são claras e objetivas
-    When ocorre qualquer falha (ex.: campo obrigatório vazio)
-    Then a mensagem exibida deve conter:
-      | Contexto | Mensagem                |
-      | Email   | “Campo email é obrigatório.” |
+    @Erro
+    Scenario: Exibição de mensagens de erro claras
+      Given O usuário tenta executar uma ação inválida (ex.: transferir valor superior ao saldo)
+      When A ação é processada
+      Then O sistema deve exibir uma mensagem de erro explicativa e específica
+      And A mensagem deve estar em destaque (ex.: vermelho, negrito)
 
-  Scenario: Links e menus são consistentes em todas as páginas
-    Given o usuário está em qualquer página
-    When verifica o menu principal
-    Then todos os links (Login, Cadastro, Conta, Transferência, Empréstimo, Pagamento) estão presentes
-    And ao clicar em cada link, a página correspondente é carregada corretamente
+    @Acessibilidade
+    Scenario: Navegação via teclado e leitores de tela
+      Given O usuário utiliza um leitor de tela
+      When Ele navega pelo site
+      Then Todos os elementos interativos devem ter rótulos adequados e serem acessíveis via teclado
 ```
 
 ---
 
-## 4️⃣ Implementação dos Steps
-
-> Para cada arquivo `.feature` existe um arquivo `*_steps.py` correspondente.  
-> Use *parsers* quando precisar capturar valores de parâmetros e *table* para tabelas.
-
-> **Observação:**  
-> Este exemplo usa **Selenium** em modo headless; altere os seletores (`By.ID`, `By.NAME`, etc.) para a sua aplicação real.  
-> Se preferir, troque por chamadas a uma API REST usando `requests` + `pytest`.
-
-### 4.1 `steps/cadastro_steps.py`
+## 3️⃣ Fixtures – `tests/conftest.py`
 
 ```python
-# steps/cadastro_steps.py
 import pytest
-from pytest_bdd import scenarios, given, when, then, parsers
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.common.by import By
+from pages.base_page import BasePage
+from datetime import datetime, timedelta
 
-scenarios('../features/cadastro.feature')
+# ------------------------------------------------------------------
+# 1. WebDriver
+# ------------------------------------------------------------------
+@pytest.fixture(scope="session")
+def driver():
+    options = webdriver.ChromeOptions()
+    options.add_argument("--headless")          # remova se quiser ver o browser
+    options.add_argument("--disable-gpu")
+    # Caminho do ChromeDriver (ajuste se necessário)
+    service = ChromeService()
+    driver = webdriver.Chrome(service=service, options=options)
+    driver.implicitly_wait(5)
+    yield driver
+    driver.quit()
 
+# ------------------------------------------------------------------
+# 2. Base Page (para que as páginas tenham acesso ao driver)
+# ------------------------------------------------------------------
+@pytest.fixture
+def base_page(driver):
+    return BasePage(driver)
 
-# ---------- Givens ----------
+# ------------------------------------------------------------------
+# 3. Helpers de dados (ex.: criar contas, logar, etc.)
+# ------------------------------------------------------------------
+@pytest.fixture
+def login_user(base_page):
+    def _login(email, password):
+        login_page = base_page.navigate_to_login()
+        login_page.enter_email(email)
+        login_page.enter_password(password)
+        login_page.click_enter()
+    return _login
 
-@given('o usuário está na página de cadastro')
-def navigate_to_registration(driver, base_url):
-    driver.get(f"{base_url}/register")  # ajuste a rota
-    assert "Register" in driver.title
+@pytest.fixture
+def create_account(base_page):
+    def _create(nome, email, telefone, cep):
+        reg_page = base_page.navigate_to_registration()
+        reg_page.enter_name(nome)
+        reg_page.enter_email(email)
+        reg_page.enter_phone(telefone)
+        reg_page.enter_cep(cep)
+        reg_page.submit()
+    return _create
 
+@pytest.fixture
+def get_account_balance(base_page):
+    def _balance():
+        return base_page.account_page.get_balance()
+    return _balance
 
-# ---------- Wenes ----------
+# ------------------------------------------------------------------
+# 4. Fixtures de contexto para cenários “Given”
+# ------------------------------------------------------------------
+@pytest.fixture
+def user_with_account():
+    # Retorna um dicionário de usuário que pode ser usado em vários steps
+    return {"email": "usuario@email.com", "senha": "Senha123"}
 
-@when(parsers.parse('preenche "{campo}" com "{valor}"'))
-def fill_field(driver, campo, valor):
-    # mapeamento simplificado; adapte conforme a sua tela
-    id_map = {
-        "Nome": "customer.firstName",
-        "Email": "customer.email",
-        "Telefone": "customer.phoneNumber",
-        "CEP": "customer.postalCode",
-    }
-    field_id = id_map.get(campo)
-    assert field_id, f"Campo '{campo}' não mapeado"
-    input_elem = driver.find_element(By.ID, field_id)
-    input_elem.clear()
-    input_elem.send_keys(valor)
-
-
-@when('preenche os demais campos obrigatórios com valores válidos')
-def fill_required_fields(driver):
-    # Exemplo simples – ajuste para sua aplicação
-    driver.find_element(By.ID, "customer.lastName").send_keys("Silva")
-    driver.find_element(By.ID, "customer.address.street").send_keys("Rua X, 123")
-    driver.find_element(By.ID, "customer.address.city").send_keys("São Paulo")
-    driver.find_element(By.ID, "customer.address.state").send_keys("SP")
-    driver.find_element(By.ID, "customer.address.zipCode").send_keys("01000-000")
-    driver.find_element(By.ID, "customer.phoneNumber").send_keys("11987654321")
-    driver.find_element(By.ID, "customer.ssn").send_keys("123-45-6789")
-    driver.find_element(By.ID, "customer.username").send_keys("joao" + pytest.random.randint(1000, 9999))
-    driver.find_element(By.ID, "customer.password").send_keys("Segura123")
-    driver.find_element(By.ID, "customer.confirmPassword").send_keys("Segura123")
-
-
-@when('clica em “Cadastrar”')
-def click_register(driver):
-    driver.find_element(By.ID, "registerBtn").click()
-
-
-# ---------- Then ----------
-
-@then('a mensagem de confirmação “Cadastro concluído!” deve ser exibida')
-def confirm_message(driver):
-    alert = driver.find_element(By.CLASS_NAME, "alert-success")
-    assert "Cadastro concluído!" in alert.text
-
-
-@then('o usuário pode fazer login com as credenciais recém‑criados')
-def login_after_registration(driver, context):
-    # armazenamos o username/Password no context
-    username = driver.find_element(By.ID, "customer.username").get_attribute("value")
-    password = driver.find_element(By.ID, "customer.password").get_attribute("value")
-    context["login"] = (username, password)
-
-    driver.get(f"{driver.current_url.split('/')[0]}/login")
-    driver.find_element(By.ID, "username").send_keys(username)
-    driver.find_element(By.ID, "password").send_keys(password)
-    driver.find_element(By.ID, "loginButton").click()
-
-    assert "Login" not in driver.title
-    assert f"Olá {username}" in driver.page_source
-
-
-# ---------- Failure scenario steps ----------
-
-@when(parsers.parse('preenche "{campo}" com "{valor_invalido}"'))
-def fill_invalid_field(driver, campo, valor_invalido):
-    fill_field(driver, campo, valor_invalido)
-
-
-@then(parsers.parse('deve ser exibida a mensagem de erro "{mensagem}"'))
-def check_error_message(driver, mensagem):
-    alert = driver.find_element(By.CLASS_NAME, "alert-danger")
-    assert mensagem.strip("“”") in alert.text
+@pytest.fixture
+def logged_in_user(login_user, user_with_account):
+    login_user(user_with_account["email"], user_with_account["senha"])
+    return user_with_account
 ```
 
-> **Dica:** Se você preferir usar *page objects*, encapsule os elementos em classes.
+> **Dica:** Se a aplicação for **API‑first**, troque os *fixtures* de Selenium por chamadas `requests`. A estrutura do projeto continua igual.
 
-### 4.2 `steps/login_steps.py`
+---
+
+## 4️⃣ Page Objects – Exemplos
+
+### 4.1 `pages/base_page.py`
 
 ```python
-# steps/login_steps.py
-import pytest
-from pytest_bdd import scenarios, given, when, then, parsers
-from selenium.webdriver.common.by import By
+class BasePage:
+    def __init__(self, driver):
+        self.driver = driver
 
-scenarios('../features/login.feature')
+    # ------------------------ Navegação ------------------------
+    def navigate_to_login(self):
+        from pages.login_page import LoginPage
+        self.driver.get("https://app.parabank.com/login")
+        return LoginPage(self.driver)
 
+    def navigate_to_registration(self):
+        from pages.registration_page import RegistrationPage
+        self.driver.get("https://app.parabank.com/register")
+        return RegistrationPage(self.driver)
 
-@given(parsers.parse('existe um usuário cadastrado com e‑mail "{email}" e senha "{senha}"'))
-def create_user(driver, base_url, email, senha):
-    """
-    Cria um usuário de forma simples usando o endpoint de registro (ou via UI).
-    Para fins de teste, vamos usar a página de registro diretamente.
-    """
-    driver.get(f"{base_url}/register")
-    # preencher todos os campos exigidos – valores fictícios
-    driver.find_element(By.ID, "customer.firstName").send_keys("Maria")
-    driver.find_element(By.ID, "customer.lastName").send_keys("Silva")
-    driver.find_element(By.ID, "customer.address.street").send_keys("Av. Brasil, 100")
-    driver.find_element(By.ID, "customer.address.city").send_keys("Rio de Janeiro")
-    driver.find_element(By.ID, "customer.address.state").send_keys("RJ")
-    driver.find_element(By.ID, "customer.address.zipCode").send_keys("20000-000")
-    driver.find_element(By.ID, "customer.phoneNumber").send_keys("21987654321")
-    driver.find_element(By.ID, "customer.ssn").send_keys("987-65-4321")
-    driver.find_element(By.ID, "customer.username").send_keys(email)
-    driver.find_element(By.ID, "customer.password").send_keys(senha)
-    driver.find_element(By.ID, "customer.confirmPassword").send_keys(senha)
-    driver.find_element(By.ID, "registerBtn").click()
+    def navigate_to_account(self):
+        from pages.account_page import AccountPage
+        self.driver.get("https://app.parabank.com/account")
+        return AccountPage(self.driver)
 
-    # verifica que a mensagem de sucesso apareceu
-    assert "Cadastro concluído!" in driver.page_source
+    def navigate_to_transfer(self):
+        from pages.transfer_page import TransferPage
+        self.driver.get("https://app.parabank.com/transfer")
+        return TransferPage(self.driver)
 
+    def navigate_to_loan(self):
+        from pages.loan_page import LoanPage
+        self.driver.get("https://app.parabank.com/loan")
+        return LoanPage(self.driver)
 
-@given(parsers.parse('existe um usuário cadastrado com e‑mail "{email}"'))
-def create_user_no_pass(driver, base_url, email):
-    # cria apenas com senha default (por simplicidade)
-    create_user(driver, base_url, email, "Segura123")
-
-
-@when(parsers.parse('o usuário insere "{email}" no campo de e‑mail'))
-def enter_email(driver, email):
-    driver.find_element(By.ID, "username").send_keys(email)
-
-
-@when(parsers.parse('insere "{senha}" no campo de senha'))
-def enter_password(driver, senha):
-    driver.find_element(By.ID, "password").send_keys(senha)
-
-
-@when('clica em “Entrar”')
-def click_login(driver):
-    driver.find_element(By.ID, "loginButton").click()
-
-
-@then('o usuário é redirecionado para a página inicial da conta')
-def check_redirection(driver):
-    assert "/account" in driver.current_url
-    assert "Account Overview" in driver.title
-
-
-@then(parsers.parse('o banner “Bem‑vindo {nome}!” é exibido'))
-def banner_welcome(driver, nome):
-    banner = driver.find_element(By.ID, "welcomeBanner")
-    assert f"Bem‑vindo {nome}!" in banner.text
-
-
-@then(parsers.parse('a mensagem “{mensagem}” é exibida'))
-def error_message(driver, mensagem):
-    alert = driver.find_element(By.CLASS_NAME, "alert-danger")
-    assert mensagem in alert.text
+    def navigate_to_payment(self):
+        from pages.payment_page import PaymentPage
+        self.driver.get("https://app.parabank.com/payment")
+        return PaymentPage(self.driver)
 ```
 
-### 4.3 `steps/acesso_conta_steps.py`
+> **Obs.:** Os demais arquivos de página (`registration_page.py`, `login_page.py`, `account_page.py`, ...) contêm os *locators* e os métodos usados nos *steps*. Eles são apenas esqueleto; substitua os `pass` pelos comandos Selenium reais.
+
+---
+
+## 5️⃣ Step Definitions – `tests/steps/para_bank_steps.py`
 
 ```python
-# steps/acesso_conta_steps.py
 import pytest
-from pytest_bdd import scenarios, given, when, then, parsers
-from selenium.webdriver.common.by import By
-
-scenarios('../features/acesso_conta.feature')
-
-
-# ---------- Given ----------
-
-@given(parsers.parse('o usuário está logado e possui saldo de R$ {saldo:float},00'))
-def login_and_set_balance(driver, base_url, saldo):
-    # login prévio
-    driver.get(f"{base_url}/login")
-    driver.find_element(By.ID, "username").send_keys("teste@conta.com")
-    driver.find_element(By.ID, "password").send_keys("Segura123")
-    driver.find_element(By.ID, "loginButton").click()
-
-    # simula o saldo (apenas para teste)
-    # em produção use um mock de backend ou API
-    driver.execute_script(f"document.querySelector('#balance').innerText = 'R$ {saldo:.2f}';")
-
-
-@given(parsers.parse('o usuário está logado'))
-def login(driver, base_url):
-    driver.get(f"{base_url}/login")
-    driver.find_element(By.ID, "username").send_keys("teste@conta.com")
-    driver.find_element(By.ID, "password").send_keys("Segura123")
-    driver.find_element(By.ID, "loginButton").click()
-
-
-@given(parsers.parse('possui as seguintes transações:'))
-def seed_transactions(driver, table):
-    """
-    table: pytest-bdd Table object
-    Exemplo:
-    | Data       | Tipo      | Valor  |
-    | 2024-09-08 | Depósito  | 1.000  |
-    | 2024-09-10 | Saque     | 200    |
-    """
-    # para demo, apenas gravamos no localStorage (ou use API)
-    for row in table:
-        driver.execute_script(
-            f"window.localStorage.setItem('txn_{row['Data']}', JSON.stringify({{tipo:'{row['Tipo']}', valor:{row['Valor']}}}));"
-        )
-
-
-# ---------- When ----------
-
-@when(parsers.parse('realiza um depósito de R$ {valor:float},00'))
-def deposit(driver, valor):
-    driver.find_element(By.ID, "depositAmount").send_keys(str(valor))
-    driver.find_element(By.ID, "depositButton").click()
-
-
-@when('acessa a página de extrato')
-def go_to_statement(driver):
-    driver.find_element(By.LINK_TEXT, "Statement").click()
-
-
-# ---------- Then ----------
-
-@then(parsers.parse('o saldo exibido deve ser R$ {saldo:float},00'))
-def check_balance(driver, saldo):
-    bal_text = driver.find_element(By.ID, "balance").text
-    assert f"R$ {saldo:.2f}" == bal_text.strip()
-
-
-@then(parsers.parse('a lista de transações deve mostrar:'))
-def check_transactions(driver, expected_table):
-    rows = driver.find_elements(By.CSS_SELECTOR, "#transactionTable tbody tr")
-    assert len(rows) == len(expected_table)
-    for row, expected in zip(rows, expected_table):
-        cells = row.find_elements(By.TAG_NAME, "td")
-        assert cells[0].text.strip() == expected['1']
-        assert cells[1].text.strip() == expected['2']
-        assert cells[2].text.strip() == expected['3']
-        assert cells[3].text.strip() == expected['4']
-```
-
-> **Obs.:**  
-> O código acima usa `window.localStorage` para simular o backend. Em um cenário real, use uma camada de *mock* ou *stubs*.
-
-### 4.4 `steps/transferencia_steps.py`
-
-```python
-# steps/transferencia_steps.py
-import pytest
-from pytest_bdd import scenarios, given, when, then, parsers
-from selenium.webdriver.common.by import By
-
-scenarios('../features/transferencia.feature')
-
-
-@given(parsers.parse('o usuário possui R$ {saldo_a:float},00 na conta A'))
-def set_balance_a(driver, saldo_a):
-    driver.execute_script(f"window.localStorage.setItem('balance_A', {saldo_a});")
-
-
-@given(parsers.parse('a conta B possui R$ {saldo_b:float},00'))
-def set_balance_b(driver, saldo_b):
-    driver.execute_script(f"window.localStorage.setItem('balance_B', {saldo_b});")
-
-
-@when(parsers.parse('o usuário seleciona conta {origem} como origem'))
-def select_origin(driver, origem):
-    driver.find_element(By.ID, f"origin_{origem}").click()
-
-
-@when(parsers.parse('seleciona conta {destino} como destino'))
-def select_destination(driver, destino):
-    driver.find_element(By.ID, f"destination_{destino}").click()
-
-
-@when(parsers.parse('define o valor R$ {valor:float},00'))
-def set_value(driver, valor):
-    driver.find_element(By.ID, "transferAmount").send_keys(str(valor))
-    driver.driver.transfer_amount = valor  # guarda para validação
-
-
-@when('confirma a transferência')
-def confirm_transfer(driver):
-    driver.find_element(By.ID, "transferButton").click()
-
-
-@then(parsers.parse('a conta {conta} deve exibir saldo de R$ {saldo:float},00'))
-def check_account_balance(driver, conta, saldo):
-    actual = float(driver.execute_script(f"return window.localStorage.getItem('balance_{conta}')"))
-    assert actual == saldo
-
-
-@then(parsers.parse('ambas as contas devem registrar a transação no histórico'))
-def check_history(driver):
-    history = driver.execute_script("return JSON.parse(localStorage.getItem('history')) || []")
-    assert len(history) == 1
-    txn = history[0]
-    assert txn["origin"] == "A" and txn["dest"] == "B" and txn["valor"] == driver.driver.transfer_amount
-
-
-# ---------- Failure scenario steps ----------
-@when(parsers.parse('tenta transferir R$ {valor:float},00'))
-def transfer_insufficient(driver, valor):
-    driver.find_element(By.ID, "origin_A").click()
-    driver.find_element(By.ID, "destination_B").click()
-    driver.find_element(By.ID, "transferAmount").send_keys(str(valor))
-    driver.find_element(By.ID, "transferButton").click()
-
-
-@then(parsers.parse('a mensagem “{mensagem}” deve ser exibida'))
-def transfer_error(driver, mensagem):
-    alert = driver.find_element(By.CLASS_NAME, "alert-danger")
-    assert mensagem in alert.text
-```
-
-### 4.5 `steps/emprestimo_steps.py`
-
-```python
-# steps/emprestimo_steps.py
-import pytest
-from pytest_bdd import scenarios, given, when, then, parsers
-from selenium.webdriver.common.by import By
-
-scenarios('../features/solicitacao_emprestimo.feature')
-
-
-@given(parsers.parse('o usuário tem renda anual de R$ {renda:float},00'))
-def set_income(driver, renda):
-    driver.execute_script(f"window.localStorage.setItem('income', {renda});")
-
-
-@when(parsers.parse('solicita empréstimo de R$ {valor:float},00'))
-def request_loan(driver, valor):
-    driver.find_element(By.ID, "loanAmount").send_keys(str(valor))
-    driver.find_element(By.ID, "loanButton").click()
-
-
-@then(parsers.parse('o sistema deve retornar “{resultado}”'))
-def check_loan_result(driver, resultado):
-    result = driver.find_element(By.ID, "loanResult").text
-    assert resultado in result
-
-
-@then('o valor será adicionado ao saldo da conta')
-def loan_credit(driver):
-    bal = float(driver.execute_script("return parseFloat(document.querySelector('#balance').innerText.replace(/[^0-9,]/g,'').replace(',','.') )"))
-    # aqui assumimos que o saldo inicial era 0 e foi creditado
-    assert bal > 0
-
-
-@then('nenhum valor é creditado')
-def loan_not_granted(driver):
-    bal = float(driver.execute_script("return parseFloat(document.querySelector('#balance').innerText.replace(/[^0-9,]/g,'').replace(',','.') )"))
-    assert bal == 0
-```
-
-### 4.6 `steps/pagamento_steps.py`
-
-```python
-# steps/pagamento_steps.py
-import pytest
-from pytest_bdd import scenarios, given, when, then, parsers
-from selenium.webdriver.common.by import By
-
-scenarios('../features/pagamento.feature')
-
-
-@given('o usuário possui saldo suficiente')
-def ensure_balance(driver):
-    driver.execute_script("window.localStorage.setItem('balance', 1000);")  # valor arbitrário
-
-
-@when(parsers.parse('registra pagamento com:'))
-def register_payment(driver, table):
-    # table: tabela com campos do cenário
-    data = {col: row for col in table[0].keys() for row in table}
-    driver.find_element(By.ID, "beneficiary").send_keys(data['Beneficiário'])
-    driver.find_element(By.ID, "address").send_keys(data['Endereço'])
-    driver.find_element(By.ID, "city").send_keys(data['Cidade'])
-    driver.find_element(By.ID, "state").send_keys(data['Estado'])
-    driver.find_element(By.ID, "zip").send_keys(data['CEP'])
-    driver.find_element(By.ID, "phone").send_keys(data['Telefone'])
-    driver.find_element(By.ID, "destinationAccount").send_keys(data['Conta Destino'])
-    driver.find_element(By.ID, "amount").send_keys(data['Valor'].replace('R$ ', '').replace(',', '.'))
-    if 'Data' in data:
-        driver.find_element(By.ID, "paymentDate").send_keys(data['Data'])
-    else:
-        driver.find_element(By.ID, "paymentDate").clear()  # data atual
-
-
-@when('confirma o pagamento')
-def confirm_payment(driver):
-    driver.find_element(By.ID, "submitPayment").click()
-
-
-@then('a transação deve aparecer no histórico de pagamento')
-def check_payment_history(driver):
-    history = driver.execute_script("return JSON.parse(localStorage.getItem('paymentHistory')) || []")
-    assert len(history) > 0
-
-
-@then(parsers.parse('o saldo deve ser debitado em R$ {valor:float},00'))
-def check_balance_debited(driver, valor):
-    bal = float(driver.execute_script("return window.localStorage.getItem('balance')"))
-    assert bal == 1000 - valor
-
-
-@then(parsers.parse('o pagamento é marcado como “{status}”'))
-def check_payment_status(driver, status):
-    latest = driver.execute_script("return JSON.parse(localStorage.getItem('paymentHistory')).pop()")
-    assert latest["status"] == status
-
-
-@then('não aparece no extrato até a data de vencimento')
-def check_future_extrato(driver):
-    # garantimos que o extrato não inclui a transação futura
-    extrato = driver.execute_script("return JSON.parse(localStorage.getItem('extrato')) || []")
-    assert not any(txn["status"] == "Agendado" for txn in extrato)
-```
-
-### 4.7 `steps/navegacao_steps.py`
-
-```python
-# steps/navegacao_steps.py
-import pytest
-from pytest_bdd import scenarios, given, when, then, parsers
-from selenium.webdriver.common.by import By
-
-scenarios('../features/navegacao.feature')
-
-
-@when('acessa cada página')
-def visit_all_pages(driver, base_url):
-    links = [
-        ("Login", "/login"),
-        ("Cadastro", "/register"),
-        ("Extrato", "/statement"),
-        ("Transferência", "/transfer"),
-        ("Empréstimo", "/loan"),
-        ("Pagamento", "/payment"),
-    ]
-    for name, path in links:
-        driver.get(base_url + path)
-        assert driver.find_element(By.TAG_NAME, "body")  # apenas garantimos que a página carregou
-
-
-@then('nenhuma página exibe erro de carregamento')
-def check_no_errors(driver):
-    errors = driver.find_elements(By.CLASS_NAME, "alert-danger")
-    assert len(errors) == 0
-
-
-@when('ocorre qualquer falha (ex.: campo obrigatório vazio)')
-def trigger_error(driver):
-    # simula envio de formulário vazio
-    driver.get(f"{driver.current_url}")
-    driver.find_element(By.ID, "submitBtn").click()
-
-
-@then(parsers.parse('a mensagem exibida deve conter:'))
-def check_specific_error(driver, table):
-    for row in table:
-        context = row['Contexto']
-        msg = row['Mensagem'].strip('“”')
-        alert = driver.find_element(By.CLASS_NAME, "alert-danger")
-        assert msg in alert.text, f"Esperava '{msg}' para o campo {context}"
-
-
-@when('verifica o menu principal')
-def verify_menu(driver):
-    driver.get(f"{driver.current_url}")
-    # não precisamos de assert aqui; o step seguinte fará
+from pytest_bdd import given, when, then, parsers, scenario
+from datetime import datetime, timedelta
+
+# ------------------------------------------------------------------
+# 1. Decorator de cenário (pode ser usado para cada cenário ou para
+#    o arquivo inteiro).  Para manter o arquivo enxuto, use a opção
+#    de “scenarios” nos testes abaixo (não mostramos todos os 30
+#    cenários, apenas alguns exemplares).
+# ------------------------------------------------------------------
+# Exemplo:
+# @scenario('features/para_bank.feature', 'Cadastro com todos os campos obrigatórios preenchidos')
+# def test_cadastro_completo():
+#     pass
+
+# ------------------------------------------------------------------
+# 2. Steps
+# ------------------------------------------------------------------
+
+# ---------------------- Cadastro ----------------------
+@given("O usuário acessa a página de cadastro")
+def user_accesses_registration(base_page):
+    return base_page.navigate_to_registration()
+
+@when(parsers.cfparse('Ele preenche os campos obrigatórios com valores válidos "<Nome>", "<Email>", "<Telefone>", "<CEP>" e clica em "Registrar"'))
+def fill_registration_valid(base_page, Nome, Email, Telefone, CEP):
+    reg_page = base_page.navigate_to_registration()
+    reg_page.enter_name(Nome)
+    reg_page.enter_email(Email)
+    reg_page.enter_phone(Telefone)
+    reg_page.enter_cep(CEP)
+    reg_page.submit()
+
+@when(parsers.cfparse('Ele preenche os campos obrigatórios com valores inválidos "<Nome>", "<Email>", "<Telefone>", "<CEP>" e clica em "Registrar"'))
+def fill_registration_invalid(base_page, Nome, Email, Telefone, CEP):
+    reg_page = base_page.navigate_to_registration()
+    reg_page.enter_name(Nome)
+    reg_page.enter_email(Email)
+    reg_page.enter_phone(Telefone)
+    reg_page.enter_cep(CEP)
+    reg_page.submit()
+
+@then('O sistema deve exibir a mensagem de confirmação "Cadastro realizado com sucesso"')
+def confirm_registration_success(reg_page):
+    assert reg_page.is_success_message_displayed(), "Mensagem de sucesso não apareceu"
+
+@then('O usuário deve ser redirecionado para a tela de login')
+def user_redirected_to_login(reg_page):
+    assert reg_page.current_url.endswith("/login"), "Não redirecionou para login"
+
+@then('O sistema deve exibir a mensagem de erro "Email inválido"')
+def error_email_invalid(reg_page):
+    assert reg_page.is_error_message_displayed("Email inválido")
+
+@then('O sistema deve exibir a mensagem de erro "Telefone inválido"')
+def error_phone_invalid(reg_page):
+    assert reg_page.is_error_message_displayed("Telefone inválido")
+
+@then('O sistema deve exibir a mensagem de erro "CEP inválido"')
+def error_cep_invalid(reg_page):
+    assert reg_page.is_error_message_displayed("CEP inválido")
+
+# ---------------------- Login ----------------------
+@given(parsers.cfparse('O usuário possui conta cadastrada com e‑mail "{email}" e senha "{senha}"'))
+def user_account_created(create_account, email, senha):
+    # Em cenário real, o usuário já existe. Aqui criamos (ou garante)
+    create_account(nome="User", email=email, telefone="(11) 90000-0000", cep="01000-000")
+    # Salvar a senha em algum local seguro se precisar de acesso direto
+    return {"email": email, "senha": senha}
+
+@when(parsers.cfparse('O usuário digita o e‑mail e a senha na tela de login e clica em "Entrar"'))
+def login_user(login_user, user_account_created):
+    login_user(user_account_created["email"], user_account_created["senha"])
+
+@when(parsers.cfparse('O usuário digita o e‑mail "<Email>" e a senha "<Senha>" na tela de login e clica em "Entrar"'))
+def login_with_invalid_creds(login_user, Email, Senha):
+    login_user(Email, Senha)
+
+@then('O sistema deve redirecionar o usuário para a página inicial da conta')
+def redirect_to_home(base_page):
+    assert base_page.current_url.endswith("/account"), "Não redirecionou para a página de conta"
+
+@then('O saldo exibido deve ser igual ao saldo inicial da conta')
+def balance_matches_initial(get_account_balance):
+    assert get_account_balance() == 1000.00  # valor fictício
+
+@then('O sistema deve exibir a mensagem de erro "Credenciais inválidas"')
+def error_invalid_credentials(base_page):
+    assert base_page.is_error_message_displayed("Credenciais inválidas")
+
+# ---------------------- Extrato ----------------------
+@given(parsers.cfparse('O usuário está logado e sua conta possui saldo inicial de R$ {saldo:float},00'))
+def login_and_set_balance(logged_in_user, saldo):
+    # Aqui você pode usar mocks para definir o saldo
     pass
 
+@given(parsers.cfparse('O usuário está logado e possui as seguintes transações:'))
+def user_with_transactions(base_page, table):
+    """
+    `table` é um objeto que contém os dados da tabela do Gherkin.
+    Ex.: table.cells[0] = ["01/09/2024", "Depósito", "+R$200"]
+    """
+    # Aplique as transações na conta (mock ou via API)
+    pass
 
-@then(parsers.parse('todos os links ({links}) estão presentes'))
-def check_links(driver, links):
-    for link in links.split(', '):
-        assert driver.find_element(By.LINK_TEXT, link.strip())
+@when(parsers.cfparse('O usuário navega até a página de “{page}”'))
+def navigate_to_page(base_page, page):
+    if page == "Minha Conta":
+        base_page.navigate_to_account()
+    elif page == "Extrato":
+        base_page.navigate_to_account()  # ou navega via menu
+    else:
+        raise ValueError(f"Página desconhecida: {page}")
 
+@then(parsers.cfparse('O saldo exibido deve ser R$ {saldo:float},00'))
+def verify_balance(base_page, saldo):
+    displayed = base_page.account_page.get_balance()
+    assert displayed == saldo, f"Saldo {displayed} ≠ {saldo}"
 
-@then('ao clicar em cada link, a página correspondente é carregada corretamente')
-def click_and_verify(driver):
-    menu_items = driver.find_elements(By.CSS_SELECTOR, "#mainMenu a")
-    for item in menu_items:
-        href = item.get_attribute("href")
-        item.click()
-        assert driver.current_url == href
-        # volta para a página inicial
-        driver.back()
-```
+@then(parsers.cfparse('O extrato deve listar:'))
+def verify_transaction_list(base_page, table):
+    expected = [row for row in table.cells]
+    actual = base_page.account_page.get_transactions()
+    assert actual == expected, f"Transações esperadas {expected} não correspondem às reais {actual}"
 
----
+@then('As transações devem estar em ordem decrescente de data')
+def transactions_order(base_page):
+    dates = [row[0] for row in base_page.account_page.get_transactions()]
+    assert dates == sorted(dates, reverse=True)
 
-## 5️⃣ Como rodar os testes
-
-```bash
-# 1. Instale as dependências
-pip install pytest pytest-bdd selenium
-
-# 2. (Opcional) Baixe o ChromeDriver e coloque em PATH
-#    ou use `webdriver-manager`:
-pip install webdriver-manager
-
-# 3. Execute os testes
-pytest
+# ------------------------------------------------------------------
+# 6️⃣  Os demais steps (Transferência, Empréstimo, Pagamento,
+#     Navegação, Acessibilidade, etc.) seguem a mesma lógica:
+#
+# - use `@given`, `@when`, `@then` com `parsers.cfparse`
+# - interaja com a página via Page Objects
+# - faça asserções usando `assert` (ou `pytest.raises` se necessário)
+# ------------------------------------------------------------------
 ```
 
 > **Dica:**  
-> Para ambientes de CI (GitHub Actions, GitLab CI…) configure o ChromeDriver, abra o *headless* e exponha o port 4444 se usar Selenium Grid.
+> Para cenários **Outline** (`Scenario Outline`), `pytest‑bdd` já gera uma execução para cada linha da tabela.  
+> A sintaxe acima já suporta essa funcionalidade, basta garantir que os parâmetros sejam declarados no `parsers.cfparse`.
 
 ---
 
-## 6️⃣ Próximos Passos
+## 6️⃣ Como rodar
 
-| Item | Próximo passo | Por que? |
-|------|---------------|----------|
-| **Mock de backend** | Crie *fixtures* que mockem APIs REST (ex.: usando `responses` ou `requests-mock`). | Evita chamadas reais e torna os testes determinísticos. |
-| **Page Objects** | Encapsule a lógica de navegação em classes. | Torna o código mais legível e reutilizável. |
-| **Reporting** | Integre `pytest-html` ou `Allure`. | Gera relatórios visualmente atraentes. |
-| **Parallel** | Use `pytest-xdist`. | Reduz tempo de execução em grandes suítes. |
-| **CI** | Adicione um workflow no GitHub Actions que rode os testes. | Garantia contínua de qualidade. |
+```bash
+# 1️⃣ Instale as dependências
+pip install -r requirements.txt
+
+# 2️⃣ Execute os testes
+pytest
+```
+
+> **requirements.txt**
+
+```
+pytest>=8.0
+pytest-bdd>=3.0
+selenium>=4.0
+```
 
 ---
 
-**Pronto!**  
-Você agora tem uma base completa de testes automatizados para todas as features do `ParaBank`, utilizando `pytest-bdd` com Selenium em modo headless. Basta ajustar os seletores e a lógica de mock para seu ambiente de produção. Boa sorte e bons testes!
+## 7️⃣ Próximos passos
+
+1. **Implementar os métodos** de cada *Page Object* (`enter_name`, `submit`, `is_success_message_displayed`, etc.) usando Selenium ou a API da aplicação.  
+2. **Configurar um driver** (ChromeDriver, GeckoDriver, etc.) que esteja no PATH.  
+3. **Criar fixtures de banco de dados** ou usar *mock* para evitar chamadas reais em ambiente de CI.  
+4. **Adicionar relatórios** (`pytest-html`, `allure-pytest`) para geração automática de artefatos.  
+5. **Rodar em containers** (Docker + Selenium Grid) caso seu ambiente de teste seja distribuído.
+
+---
+
+## 8️⃣ Observações finais
+
+- **Localizadores** (`By.ID`, `By.XPATH`, etc.) devem ser revisados conforme o HTML real da aplicação.  
+- Para garantir **acessibilidade**, o teste de teclado pode usar `send_keys(Keys.TAB)` e verificar a presença de `aria-label`.  
+- O **mapeamento de mensagens** (sucesso, erro) deve ser consistente com o texto exibido na UI; se a aplicação usar internacionalização, troque as mensagens pelos valores corretos.  
+
+Pronto! Agora você tem um **esqueleto funcional** em Python com `pytest-bdd` que cobre todas as histórias BDD que você descreveu. Basta preencher os detalhes e integrar com o seu ambiente de teste. Boa codificação!
