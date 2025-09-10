@@ -4,7 +4,7 @@ run-name: Running - Execução de testes
 on:
   push:
     branches: 
-      - feat-pipeline-conexao
+      - main
   workflow_dispatch:
     
 jobs:

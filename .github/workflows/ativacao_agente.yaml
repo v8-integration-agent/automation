@@ -3,7 +3,7 @@ run-name: Running - Workflow BDD Test Generation
 
 on:
   push:
-    branches-ignore: 
+    branches: 
       - main
     paths:
       - 'ai/requirements/criterios.md'
