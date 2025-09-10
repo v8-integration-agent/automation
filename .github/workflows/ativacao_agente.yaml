@@ -4,7 +4,7 @@ run-name: Running - Workflow BDD Test Generation
 on:
   push:
     branches: 
-      - test
+      - main
     paths:
       - 'ai/requirements/criterios.md'
   
@@ -40,8 +40,8 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git pull
-          git add ai/bdd/*.feature ai/tests/*.py
-          git commit -m "🤖 Gerando BDDs e testes automáticos [skip ci]" || echo "Nada para commitar"
+          git add ai/bdd/*.feature
+          git commit -m "🤖 Gerando BDDs [skip ci]" || echo "Nada para commitar"
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

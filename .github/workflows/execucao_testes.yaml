@@ -4,7 +4,7 @@ run-name: Running - Execução de testes
 on:
   push:
     branches: 
-      - test
+      - main
   workflow_dispatch:
     
 jobs:
@@ -51,7 +51,7 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git pull
           git add ai/analysis/*
-          git commit -m "🤖 Gerando analises e conselhos automáticos [skip ci]" || echo "Nada para commitar"
+          git commit -m "🤖 Gerando análises e conselhos automáticos [skip ci]" || echo "Nada para commitar"
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
