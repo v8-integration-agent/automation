@@ -22,12 +22,7 @@ jobs:
  
       - name: Instalação do Playwright
         run: npx playwright install --with-deps
- 
-      - name: Execução de testes Playwright
-        run: |
-          npx playwright test 
-        continue-on-error: true
- 
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
@@ -36,6 +31,12 @@ jobs:
       - name: Install Python dependencies
         run: |
           pip install groq pytest pytest-bdd
+
+ 
+      - name: Execução de testes Playwright
+        run: |
+          npx playwright test 
+        continue-on-error: true
  
       - name: Listar resultados dos testes
         run: ls -R test-results || echo "Nenhum arquivo encontrado"
