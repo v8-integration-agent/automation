@@ -49,6 +49,7 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git pull
           git add ai/analysis/*
           git commit -m "🤖 Gerando analises e conselhos automáticos [skip ci]" || echo "Nada para commitar"
           git push
