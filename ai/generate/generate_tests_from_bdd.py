@@ -8,9 +8,20 @@ def generate_tests_from_bdd():
         bdd_content = f.read()
  
     prompt = f"""
-    Você é um especialista em automação de testes.
-    Converta o seguinte arquivo BDD em código de testes automatizados usando Python e pytest-bdd.
- 
+  Você é um especialista em automação de testes utilizando Playwright.
+
+Converta o seguinte arquivo BDD (Gherkin) em código de teste automatizado funcional, incluindo:
+
+Estrutura de testes com Playwright e TypeScript/JavaScript.
+
+Definição clara de cenários, passos e seletores.
+
+Boas práticas de automação (esperas, organização de código, tratamento de erros).
+
+Comentários explicativos sobre cada passo do teste.
+
+Forneça o código completo pronto para execução no Playwright Test Runner.
+
     BDD:
     {bdd_content}
     """
@@ -23,7 +34,7 @@ def generate_tests_from_bdd():
     tests_code = response.choices[0].message.content
  
     os.makedirs("ai/tests", exist_ok=True)
-    with open("ai/tests/test_generated.py", "w", encoding="utf-8") as f:
+    with open("ai/tests/test_generated.ts", "w", encoding="utf-8") as f:
         f.write(tests_code)
  
  

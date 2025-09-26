@@ -4,7 +4,9 @@ run-name: Running - Execução de testes
 on:
   push:
     branches: 
-      - main
+      - generate-testd
+    paths:
+      - 'ai/requirements/criterios.md'
   workflow_dispatch:
     
 jobs:
