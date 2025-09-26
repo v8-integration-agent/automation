@@ -1,65 +1,142 @@
 ## 1. Quais testes falharam?
 
-| Teste | Linha no log | Descrição |
-|-------|--------------|-----------|
-| **Login válido falhou** | `2025-09-26T14:51:24.536Z` | O teste que valida que o usuário consegue logar com credenciais válidas não passou. |
-| **Usuário deve atualizar telefone com sucesso falhou** | `2025-09-26T14:51:27.124Z` | O teste que verifica se o telefone pode ser atualizado com dados válidos acabou em timeout. |
-| **Usuário deve atualizar telefone com campo vazio falhou** | `2025-09-26T14:51:38.022Z` | O teste que garante que a atualização não é permitida quando o campo telefone está vazio também terminou em timeout. |
+| # | Descrição do Teste | Status |
+|---|--------------------|--------|
+| 1 | **Login válido falhou** | ❌ Falhou |
+| 2 | **Usuário deve atualizar telefone com sucesso falhou** | ❌ Falhou |
+| 3 | **Usuário deve atualizar telefone com campo vazio falhou** | ❌ Falhou |
+
+Todos os testes registrados no log acabaram em erro.
 
 ---
 
-## 2. Motivo de cada falha
+## 2. Por que cada falha aconteceu?
 
-| Teste | Motivo principal (conforme log) | Explicação técnica |
-|-------|--------------------------------|--------------------|
-| **Login válido falhou** | `Locator: locator('#leftPanel > p')` não encontrou o elemento | A expectativa era que, depois do login, fosse exibida uma `<p>` dentro do elemento `#leftPanel` contendo a palavra *“Welcome”*. O Playwright tentou encontrar o elemento por 5 s (`Timeout: 5000ms`) e não conseguiu.  Isso pode ocorrer por:  <br>- O seletor está incorreto (por exemplo, o elemento pode ter outro caminho, ou usar um ID dinâmico).  <br>- A página não terminou de renderizar/redirectou ainda quando o check foi disparado.  <br>- O login falhou silenciosamente e a página de erro não exibe a `<p>`. |
-| **Usuário deve atualizar telefone com sucesso falhou** | `Test timeout of 10000ms exceeded.` | O teste não terminou dentro do limite de 10 s. Isso normalmente significa que uma ação assíncrona (click, envio de formulário, navegação, espera de resposta de API) não aconteceu ou não foi aguardada corretamente. O Playwright esperou 10 s para a última asserção ou operação e não recebeu a confirmação esperada. |
-| **Usuário deve atualizar telefone com campo vazio falhou** | `Test timeout of 10000ms exceeded.` | Mesmo motivo do teste anterior: o fluxo de atualização (ou a verificação de erro) não completou em 10 s. Provavelmente o teste tentou clicar em “Salvar” com o campo vazio, mas não havia nenhuma espera para o diálogo de erro aparecer ou a página não respondeu. |
-
----
-
-## 3. Sugestões de correção
-
-### 3.1. Correção do teste “Login válido falhou”
-
-| Problema | Como corrigir |
-|----------|---------------|
-| **Seletório inválido ou frágil** | 1. Abra o site em modo de inspeção (DevTools) e verifique a estrutura atual da página. <br>2. Se o elemento que contém “Welcome” tem um `id`, `data-testid`, ou outra classe estável, use‑o: `await expect(page.locator('#welcome-message')).toContainText('Welcome');` <br>3. Se a estrutura mudou, atualize o seletor. |
-| **Não aguarda a navegação/rotação** | 1. Depois do `await page.fill()` e `await page.click('text=Login')`, adicione: <br>`await page.waitForNavigation({ waitUntil: 'networkidle' });` <br>2. Ou use `await page.waitForSelector('#leftPanel > p', { state: 'visible', timeout: 10000 });` antes da asserção. |
-| **Timeout pequeno** | Se a página demora mais que 5 s para carregar a mensagem, aumente o timeout: <br>`await expect(page.locator('#leftPanel > p')).toContainText('Welcome', { timeout: 15000 });` |
-
-### 3.2. Correção dos testes “Usuário deve atualizar telefone”
-
-Os dois testes falharam por timeout, indicando que uma etapa assíncrona não foi aguardada corretamente.  
-Para ambos, siga os passos abaixo:
-
-| Etapa | O que fazer |
-|-------|-------------|
-| **Aguardar a página/elemento** | 1. Após clicar em “Salvar”, espere pelo elemento que indica sucesso ou erro: <br>`await expect(page.locator('#phone-success')).toBeVisible({ timeout: 12000 });`<br>ou <br>`await expect(page.locator('.error-message')).toBeVisible({ timeout: 12000 });` |
-| **Aguardar a resposta da API** | Se o formulário dispara uma chamada API, use: <br>`const [response] = await Promise.all([ page.waitForResponse('**/api/update-phone'), page.click('text=Salvar') ]);` <br>Verifique `response.ok()` para determinar sucesso ou erro. |
-| **Evitar promessas não resolvidas** | Certifique-se de `await` todas as chamadas assíncronas. Se o teste usar `page.click()` seguido de `expect(...)` sem `await`, o teste continuará sem esperar. |
-| **Verificar redirecionamentos** | Caso o clique em “Salvar” redirecione para outra página, use `await page.waitForNavigation()` antes da asserção. |
-| **Timeouts mais longos** | Se a operação pode demorar mais de 10 s (por exemplo, porque a API está lenta), aumente o timeout no `expect`: <br>`await expect(page.locator('#phone-success')).toBeVisible({ timeout: 20000 });` |
-| **Logs de depuração** | Adicione `console.log(await page.content());` antes da asserção para inspecionar o HTML que está sendo renderizado no momento da falha. Isso ajuda a perceber se o elemento ainda não existe ou foi removido. |
-
-### 3.3. Boas práticas gerais
-
-| Prática | Por quê |
-|---------|---------|
-| **Use `data-testid`** | Crie atributos `data-testid` nos elementos que são críticos para testes. Eles não mudam com estilização e são mais estáveis. |
-| **Evite `page.waitForTimeout`** | Use esperas explícitas (`waitForSelector`, `waitForResponse`) em vez de `page.waitForTimeout`, que podem deixar o teste frágil. |
-| **Isolar testes** | Certifique-se de que cada teste comece do estado inicial (ex.: login limpo, formulário vazio). Use `beforeEach` e `afterEach` para limpar cookies/localStorage. |
-| **Configurar `timeout` global** | Em `playwright.config.ts` ajuste `timeout` e `expect.timeout` para valores que façam sentido para a aplicação e não sejam “tropically” curtos. |
-| **Capturar screenshots/trace em falhas** | Ative `screenshot: 'on'` e `trace: 'on'` no `project` do config; isso gera evidências visuais que facilitam a correção. |
-| **Testar em modo headless** | O modo headless pode revelar problemas de timing que aparecem apenas em execução sem UI. |
+| # | Teste | Mensagem de erro | Causa provável |
+|---|-------|------------------|----------------|
+| 1 | **Login válido falhou** | `expect(locator).toContainText(expected) failed <element(s) not found>` | O seletor `#leftPanel > p` não encontrou nenhum elemento. Isso pode ocorrer por: <br>• O elemento aparece apenas após a página terminar de carregar ou após uma animação. <br>• O seletor está incorreto (ex.: ID ou hierarquia mudou). <br>• O elemento está dentro de um *iframe* ou shadow‑DOM. <br>• O login não foi concluído corretamente e a mensagem “Welcome” nunca aparece. |
+| 2 | **Usuário deve atualizar telefone com sucesso falhou** | `Test timeout of 10000ms exceeded.` | O teste ficou preso esperando algo que nunca aconteceu, como: <br>• Falta de `await` em alguma ação (click, fill, navigation). <br>• Um `await expect(...).toHaveText(...)` sem timeout adequado. <br>• O fluxo de atualização de telefone envolve redirecionamento que não está sendo aguardado (p.ex. `page.waitForNavigation`). <br>• O elemento de confirmação (mensagem de sucesso, mudança de estado) nunca aparece. |
+| 3 | **Usuário deve atualizar telefone com campo vazio falhou** | `Test timeout of 10000ms exceeded.` | Mesma situação do teste 2, mas agora o fluxo deve validar um erro (ex.: mensagem “Campo obrigatório”). Se o fluxo de validação não é acionado, o teste pode ficar esperando indefinidamente. |
 
 ---
 
-## Resumo rápido de correções
+## 3. Como corrigir os erros
 
-| Teste | Correção imediata |
-|-------|-------------------|
-| **Login válido** | - Atualize o seletor para um elemento estável.<br>- Aguarde navegação ou a presença do elemento com `waitForSelector`. |
-| **Atualização de telefone (sucesso e campo vazio)** | - Adicione esperas explícitas (API response, elemento de sucesso/erro, navegação).<br>- Garanta `await` em todas as chamadas.<br>- Ajuste timeout se a operação for lenta. |
+### 3.1. Correções gerais
 
-Implementando essas mudanças, os testes deverão passar ou, no mínimo, falhar em etapas mais claras, facilitando a depuração futura. Boa sorte!
+| Passo | O que fazer | Por quê |
+|-------|-------------|---------|
+| **A. Habilitar a gravação de *trace* e tirar screenshot** | Adicione `await page.context().tracing.start({ screenshots: true, snapshots: true });` antes do teste e `await page.context().tracing.stop({ path: 'trace.zip' });` depois. | Permite reproduzir o que realmente aconteceu e descobrir se o elemento apareceu ou se houve erro de carregamento. |
+| **B. Validar a página está no estado correto** | Use `await page.waitForLoadState('networkidle');` ou `await page.waitForURL('**/dashboard');` antes de procurar pelo elemento. | Garante que a página terminou de carregar e que o login foi concluído. |
+| **C. Revisar e refatorar os *locators*** | 1. Confirme o seletor no dev‑tools (inspecione o elemento depois do login). <br>2. Se for dentro de um iframe, use `const frame = await page.frame({ name: /leftPanel/ });` e `frame.locator('p')`. <br>3. Evite seletores muito específicos (`>`) que dependem de estrutura exata. | Se o seletor está errado, o Playwright não encontra nada e a asserção falha. |
+| **D. Usar `expect` com tempo de espera mais longo ou com *polling*** | `await expect(page.locator('#leftPanel > p')).toContainText('Welcome', { timeout: 10000 });` | Dá mais tempo para o elemento aparecer. |
+| **E. Garantir que todas as interações são *awaited*** | `await page.click('#submit'); await page.waitForNavigation({ waitUntil: 'networkidle' });` | Se algum `await` faltar, o fluxo fica travado e o timeout ocorre. |
+| **F. Adicionar logs intermediários** | `console.log('Login OK, procurando pela mensagem...');` | Permite ver exatamente onde o teste fica parado. |
+
+---
+
+### 3.2. Soluções específicas
+
+#### 3.2.1. **Login válido falhou**
+
+```ts
+test('Login válido', async ({ page }) => {
+  // 1. Acessar a página
+  await page.goto('https://meu-app.com/login');
+
+  // 2. Preencher e submeter
+  await page.fill('#username', 'usuario');
+  await page.fill('#password', 'senha');
+  await page.click('#loginBtn');
+
+  // 3. Esperar o redirecionamento (ou ficar na mesma página se for SPA)
+  await page.waitForNavigation({ waitUntil: 'networkidle' });
+
+  // 4. Confirmar que a mensagem aparece
+  const welcomeMsg = page.locator('#leftPanel p');  // ajuste o seletor se necessário
+  await expect(welcomeMsg).toBeVisible({ timeout: 8000 });
+  await expect(welcomeMsg).toContainText('Welcome');
+});
+```
+
+- **Se o elemento estiver dentro de um iframe**:
+
+```ts
+const frame = await page.frame({ name: /leftPanel/ }); // ou use selector
+await expect(frame.locator('p')).toContainText('Welcome');
+```
+
+#### 3.2.2. **Usuário deve atualizar telefone com sucesso falhou**
+
+```ts
+test('Usuário deve atualizar telefone com sucesso', async ({ page }) => {
+  // 1. Navegar para a página de perfil
+  await page.goto('https://meu-app.com/perfil');
+
+  // 2. Interagir com o campo de telefone
+  const phoneInput = page.locator('#phoneInput');
+  await expect(phoneInput).toBeVisible({ timeout: 8000 });
+  await phoneInput.fill('1199999999');
+
+  // 3. Submeter o formulário
+  await page.click('#updatePhoneBtn');
+
+  // 4. Esperar a mensagem de sucesso
+  const successMsg = page.locator('.toast-success');
+  await expect(successMsg).toBeVisible({ timeout: 8000 });
+  await expect(successMsg).toContainText('Telefone atualizado com sucesso');
+});
+```
+
+- Se a página faz redirecionamento: `await page.waitForNavigation({ waitUntil: 'networkidle' });`
+
+#### 3.2.3. **Usuário deve atualizar telefone com campo vazio falhou**
+
+```ts
+test('Usuário deve atualizar telefone com campo vazio', async ({ page }) => {
+  await page.goto('https://meu-app.com/perfil');
+
+  const phoneInput = page.locator('#phoneInput');
+  await expect(phoneInput).toBeVisible();
+  await phoneInput.fill(''); // campo vazio
+
+  await page.click('#updatePhoneBtn');
+
+  const errorMsg = page.locator('.toast-error'); // ou elemento de erro
+  await expect(errorMsg).toBeVisible({ timeout: 8000 });
+  await expect(errorMsg).toContainText('O campo telefone é obrigatório');
+});
+```
+
+- **Caso o fluxo de validação não acione**: verifique se o botão de envio não tem `type="button"` ao invés de `type="submit"` e se o formulário não está sendo submetido via JavaScript. Se usar AJAX, aguarde a resposta:
+
+```ts
+await Promise.all([
+  page.waitForResponse(resp => resp.url().includes('/api/phone') && resp.status() === 200),
+  page.click('#updatePhoneBtn')
+]);
+```
+
+---
+
+## 4. Dicas de depuração avançada
+
+| Ferramenta | Como usar | Quando usar |
+|------------|-----------|-------------|
+| **Playwright Inspector** | `await page.pause();` antes do erro | Permite passo a passo e inspecionar DOM |
+| **Trace Viewer** | `playwright show-trace trace.zip` | Ver transição de página, screenshots e eventos |
+| **Network Monitor** | `page.on('response', res => console.log(res.url(), res.status()));` | Identificar se APIs retornam erro |
+| **Console logs** | `await page.evaluate(() => console.log(document.body.innerHTML));` | Visualizar markup real no ponto crítico |
+| **Debugger** | `debugger;` dentro do teste | Pausar a execução e inspecionar variáveis |
+
+---
+
+## 5. Resumo rápido
+
+| Teste | Falha | Solução principal |
+|-------|-------|--------------------|
+| Login válido | Elemento não encontrado | Revise o seletor e aguarde carregamento / redirecionamento. |
+| Atualizar telefone (sucesso) | Timeout | Garanta `await` em ações, adicione `waitForNavigation` ou `waitForResponse`, aumente timeout se necessário. |
+| Atualizar telefone (campo vazio) | Timeout | Garanta que a validação de campo vazio seja acionada e que o teste aguarde a mensagem de erro. |
+
+Com essas alterações, o fluxo de cada teste deve terminar dentro do limite de tempo e as asserções devem encontrar os elementos corretos. Boa sorte!
