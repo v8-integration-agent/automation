@@ -1,196 +1,208 @@
 ```gherkin
 # language: pt
 
-############################################
-# Cadastro de Usuário
-############################################
 Feature: Cadastro de Usuário
+  Como novo cliente do ParaBank
+  Quero registrar-me no sistema
+  Para que eu possa usar os serviços bancários
 
-  @cadastro @valid
-  Scenario: Cadastro com todos os campos obrigatórios preenchidos
-    Given o usuário abre a página de cadastro
-    When ele preenche "Nome" com "Maria Silva"
-    And ele preenche "Telefone" com "(11) 91234-5678"
-    And ele preenche "CEP" com "01001-000"
-    And ele preenche "Email" com "maria.silva@email.com"
-    And ele preenche "Senha" com "SenhaSegura123"
-    And ele clica no botão "Cadastrar"
-    Then o sistema deve exibir a mensagem "Cadastro concluído com sucesso"
-    And o usuário deve ser redirecionado para a página de login
+  Scenario: Cadastro bem‑sucedido com dados válidos
+    Given o usuário abre a página “Cadastro”
+    When ele preenche todos os campos obrigatórios com valores válidos
+    And ele clica em “Cadastrar”
+    Then o sistema deve exibir a mensagem “Cadastro concluído com sucesso”
+    And o usuário deve ser redirecionado para a tela de login
 
-  @cadastro @invalid
-  Scenario: Cadastro com telefone inválido
-    Given o usuário abre a página de cadastro
-    When ele preenche "Telefone" com "abc123"
+  Scenario: Cadastro falha por campos obrigatórios faltando
+    Given o usuário abre a página “Cadastro”
+    When ele deixa o campo “Nome” em branco
     And ele preenche os demais campos obrigatórios corretamente
-    And ele clica no botão "Cadastrar"
-    Then o sistema deve exibir a mensagem "Telefone informado inválido"
+    And ele clica em “Cadastrar”
+    Then o sistema deve exibir a mensagem “Nome é obrigatório”
+    And nenhum registro deve ser criado no banco de dados
 
-  @cadastro @invalid
-  Scenario: Cadastro com CEP inválido
-    Given o usuário abre a página de cadastro
-    When ele preenche "CEP" com "123"
+  Scenario Outline: Cadastro falha por campos inválidos
+    Given o usuário abre a página “Cadastro”
+    When ele preenche o campo "<campo>" com "<valor>"
     And ele preenche os demais campos obrigatórios corretamente
-    And ele clica no botão "Cadastrar"
-    Then o sistema deve exibir a mensagem "CEP informado inválido"
+    And ele clica em “Cadastrar”
+    Then o sistema deve exibir a mensagem "<mensagem>"
 
-  @cadastro @invalid
-  Scenario: Cadastro com email inválido
-    Given o usuário abre a página de cadastro
-    When ele preenche "Email" com "maria.silva"
-    And ele preenche os demais campos obrigatórios corretamente
-    And ele clica no botão "Cadastrar"
-    Then o sistema deve exibir a mensagem "Email inválido"
+    Examples:
+      | campo   | valor          | mensagem                               |
+      | Email   | usuario@      | Email inválido.                         |
+      | Telefone| 12345          | Telefone inválido.                      |
+      | CEP     | ABCDEFGH       | CEP inválido.                           |
+      | Email   | usuario@gmail  | Email inválido.                         |
+      | Telefone| (99) 9999-9999 | Telefone inválido.                      |
 
-  @cadastro @invalid
-  Scenario: Cadastro sem preencher campos obrigatórios
-    Given o usuário abre a página de cadastro
-    When ele deixa os campos em branco
-    And ele clica no botão "Cadastrar"
-    Then o sistema deve exibir mensagens de erro para todos os campos obrigatórios
+  Scenario: Cadastro falha por telefone no formato incorreto
+    Given o usuário abre a página “Cadastro”
+    When ele preenche o campo “Telefone” com “123abc”
+    And preenche todos os demais campos corretamente
+    And ele clica em “Cadastrar”
+    Then o sistema deve exibir a mensagem “Telefone inválido”
 
-  @cadastro @success
-  Scenario: Usuário pode fazer login após cadastro bem-sucedido
-    Given o usuário possui conta registrada
-    When ele abre a página de login
-    And ele preenche "Email" com "maria.silva@email.com"
-    And ele preenche "Senha" com "SenhaSegura123"
-    And ele clica no botão "Entrar"
-    Then o usuário deve ser redirecionado para a página inicial da conta
-
-
-############################################
-# Login
-############################################
 Feature: Login
+  Como usuário registrado
+  Quero fazer login
+  Para acessar minha conta
 
-  @login @valid
-  Scenario: Login com credenciais válidas
-    Given o usuário tem credenciais válidas
-    When ele abre a página de login
-    And ele preenche "Email" com "maria.silva@email.com"
-    And ele preenche "Senha" com "SenhaSegura123"
-    And ele clica no botão "Entrar"
-    Then o usuário deve ser redirecionado para a página inicial da conta
+  Scenario: Login bem‑sucedido
+    Given o usuário abre a página “Login”
+    When ele preenche “Email” com “cliente@parabank.com”
+    And ele preenche “Senha” com “SenhaSegura1”
+    And ele clica em “Entrar”
+    Then o sistema deve redirecionar para a “Dashboard da Conta”
+    And deve exibir a mensagem “Bem‑vindo, Cliente”
 
-  @login @invalid
-  Scenario: Login com credenciais inválidas
-    Given o usuário tem credenciais inválidas
-    When ele abre a página de login
-    And ele preenche "Email" com "maria.silva@email.com"
-    And ele preenche "Senha" com "SenhaErrada"
-    And ele clica no botão "Entrar"
-    Then o sistema deve exibir a mensagem "Credenciais inválidas"
+  Scenario Outline: Login falha por credenciais inválidas
+    Given o usuário abre a página “Login”
+    When ele preenche “Email” com "<email>"
+    And ele preenche “Senha” com "<senha>"
+    And ele clica em “Entrar”
+    Then o sistema deve exibir a mensagem "<mensagem>"
 
+    Examples:
+      | email               | senha            | mensagem                                 |
+      | cliente@parabank.com | senhaErrada     | Credenciais inválidas.                   |
+      | invalido@parabank.com | SenhaSegura1   | Credenciais inválidas.                   |
+      | cliente@parabank.com |                 | Senha é obrigatória.                     |
+      |                       | SenhaSegura1   | Email é obrigatório.                     |
 
-############################################
-# Acesso à Conta (Saldo e Extrato)
-############################################
-Feature: Acesso à Conta
+  Scenario: Login falha por senha vazia
+    Given o usuário abre a página “Login”
+    When ele preenche “Email” com “cliente@parabank.com”
+    And deixa o campo “Senha” em branco
+    And ele clica em “Entrar”
+    Then o sistema deve exibir a mensagem “Senha é obrigatória”
 
-  @saldo @balance
-  Scenario: Visualizar saldo atualizado após operação financeira
-    Given o usuário está logado
-    And a conta tem saldo inicial de R$ 1.000,00
-    When o usuário realiza uma transferência de R$ 200,00 para outra conta
-    Then o saldo da conta deve ser atualizado para R$ 800,00
+Feature: Acesso à Conta – Saldo e Extrato
+  Como usuário autenticado
+  Quero ver meu saldo atual e extrato
+  Para acompanhar minhas finanças
 
-  @extrato @chronology
-  Scenario: Extrato lista transações recentes em ordem cronológica
-    Given o usuário tem várias transações recentes
-    When o usuário acessa a página de extrato
-    Then as transações devem aparecer listadas do mais recente ao mais antigo
+  Scenario: Visualização de saldo atualizado após operação de crédito
+    Given o usuário está logado e na sua “Dashboard”
+    When o usuário efetua um depósito de R$ 500,00
+    Then o saldo exibido deve ser “R$ 1.000,00” (exemplo)
+    And a transação de depósito deve aparecer no extrato
 
+  Scenario: Lista de transações no extrato em ordem cronológica
+    Given o usuário está na página “Extrato”
+    When o usuário tem três transações recentes
+    Then as transações devem estar listadas da mais recente para a mais antiga
+    And cada transação deve mostrar data, descrição, valor e saldo pós‑transação
 
-############################################
-# Transferência de Fundos
-############################################
 Feature: Transferência de Fundos
+  Como cliente
+  Quero transferir dinheiro entre minhas contas
+  Para gerenciar meu orçamento
 
-  @transferencia @valid
-  Scenario: Transferência de fundos válida
-    Given a conta origem tem R$ 1.000,00
-    And a conta destino tem R$ 200,00
-    When o usuário seleciona a conta origem
-    And seleciona a conta destino
-    And entra o valor de R$ 300,00
+  Scenario: Transferência bem‑sucedida entre duas contas
+    Given o usuário está logado e na página “Transferir”
+    When ele seleciona a conta de origem “Conta A”
+    And seleciona a conta de destino “Conta B”
+    And digita o valor “R$ 200,00”
     And confirma a transferência
-    Then o valor de R$ 300,00 deve ser debitado da conta origem
-    And o valor de R$ 300,00 deve ser creditado na conta destino
-    And a transação deve aparecer no histórico de ambas as contas
+    Then o saldo de “Conta A” deve reduzir em R$ 200,00
+    And o saldo de “Conta B” deve aumentar em R$ 200,00
+    And ambas as contas devem registrar a transação no histórico
 
-  @transferencia @invalid
-  Scenario: Transferência com valor superior ao saldo disponível
-    Given a conta origem tem R$ 100,00
-    When o usuário tenta transferir R$ 200,00
-    Then o sistema deve exibir a mensagem "Saldo insuficiente para a transferência"
+  Scenario: Transferência falha por valor superior ao saldo
+    Given o usuário está logado e na página “Transferir”
+    When ele seleciona a conta de origem com saldo de R$ 100,00
+    And seleciona a conta de destino “Conta C”
+    And digita o valor “R$ 150,00”
+    And tenta confirmar a transferência
+    Then o sistema deve exibir a mensagem “Saldo insuficiente”
+    And nenhuma transferência deve ocorrer
 
+  Scenario: Transferência falha por campo obrigatório vazio
+    Given o usuário está logado e na página “Transferir”
+    When ele deixa o campo “Conta de Destino” em branco
+    And digita o valor “R$ 50,00”
+    And tenta confirmar a transferência
+    Then o sistema deve exibir a mensagem “Conta de destino é obrigatória”
 
-############################################
-# Solicitação de Empréstimo
-############################################
 Feature: Solicitação de Empréstimo
+  Como cliente
+  Quero solicitar um empréstimo
+  Para obter recursos adicionais
 
-  @emprestimo @approved
-  Scenario: Empréstimo aprovado
-    Given o usuário tem renda anual de R$ 120.000,00
-    When ele solicita um empréstimo de R$ 50.000,00
-    Then o sistema deve retornar o status "Aprovado"
+  Scenario Outline: Empréstimo aprovado com renda adequada
+    Given o usuário está logado e na página “Solicitar Empréstimo”
+    When ele informa “Valor do Empréstimo” como "<valor>"
+    And ele informa “Renda Anual” como "<renda>"
+    And ele confirma a solicitação
+    Then o sistema deve retornar o status “Aprovado”
+    And deve exibir a mensagem “Empréstimo aprovado. Valor: <valor>”
 
-  @emprestimo @denied
-  Scenario: Empréstimo negado
-    Given o usuário tem renda anual de R$ 20.000,00
-    When ele solicita um empréstimo de R$ 50.000,00
-    Then o sistema deve retornar o status "Negado"
+    Examples:
+      | valor   | renda |
+      | 10.000  | 80.000|
+      | 5.000   | 30.000|
 
+  Scenario Outline: Empréstimo negado por renda insuficiente
+    Given o usuário está logado e na página “Solicitar Empréstimo”
+    When ele informa “Valor do Empréstimo” como "<valor>"
+    And ele informa “Renda Anual” como "<renda>"
+    And ele confirma a solicitação
+    Then o sistema deve retornar o status “Negado”
+    And deve exibir a mensagem “Empréstimo negado. Renda insuficiente”
 
-############################################
-# Pagamento de Contas
-############################################
+    Examples:
+      | valor | renda |
+      | 20.000| 20.000|
+      | 15.000| 25.000|
+
 Feature: Pagamento de Contas
+  Como cliente
+  Quero registrar um pagamento de conta
+  Para manter minhas obrigações em dia
 
-  @pagamento @record
-  Scenario: Registro de pagamento
-    Given o usuário entra na página de pagamento
-    And ele preenche "Beneficiário" com "Pedro Santos"
-    And ele preenche "Endereço" com "Rua A, 123"
-    And ele preenche "Cidade" com "São Paulo"
-    And ele preenche "Estado" com "SP"
-    And ele preenche "CEP" com "01001-000"
-    And ele preenche "Telefone" com "(11) 98765-4321"
-    And ele preenche "Conta de Destino" com "123456"
-    And ele preenche "Valor" com R$ 150,00
-    And ele preenche "Data" com "2025-12-01"
-    When ele confirma o pagamento
-    Then o pagamento deve ser incluído no histórico de transações
+  Scenario: Pagamento de conta agendado para data futura
+    Given o usuário está logado e na página “Pagar Conta”
+    When ele informa “Beneficiário” como “Electricidade”
+    And ele informa “Endereço” como “Rua X, 123”
+    And ele informa “Cidade” como “São Paulo”
+    And ele informa “Estado” como “SP”
+    And ele informa “CEP” como “01001-000”
+    And ele informa “Telefone” como “(11) 91234-5678”
+    And ele informa “Conta de Destino” como “Conta B”
+    And ele informa “Valor” como “R$ 150,00”
+    And ele agenda a data de pagamento para “2025‑10‑01”
+    And ele confirma o pagamento
+    Then o pagamento deve aparecer no histórico de transações
+    And o status deve ser “Agendado”
+    And a data de pagamento futura deve ser respeitada
 
-  @pagamento @future
-  Scenario: Pagamento futuro respeita a data de agendamento
-    Given o usuário agenda um pagamento para "2025-12-01"
-    When ele visualiza pagamentos futuros
-    Then o pagamento deve aparecer com a data correta e não ser debitado até a data agendada
+  Scenario: Pagamento de conta falha por data de pagamento inválida
+    Given o usuário está logado e na página “Pagar Conta”
+    When ele agenda a data de pagamento para “31/02/2025”
+    And tenta confirmar o pagamento
+    Then o sistema deve exibir a mensagem “Data inválida”
 
+Feature: Requisitos Gerais de Navegação e Usabilidade
+  Como usuário
+  Quero navegar sem erros
+  Para garantir experiência fluída
 
-############################################
-# Navegação e Usabilidade
-############################################
-Feature: Navegação e Usabilidade
+  Scenario: Todas as páginas carregam sem erros de navegação
+    Given o usuário clica em cada link de menu (“Perfil”, “Contas”, “Transferências”, “Empréstimos”, “Contas a Pagar”)
+    When cada página é carregada
+    Then nenhuma página deve apresentar erros de carregamento
 
-  @navegacao @load
-  Scenario: Todas as páginas carregam sem erros
-    Given o usuário navega entre todas as páginas do sistema
-    Then cada página deve carregar corretamente sem mensagens de erro de navegação
+  Scenario: Mensagens de erro claras e objetivas
+    Given o usuário tenta inserir “Email” como “abc”
+    When ele submete o formulário
+    Then o sistema deve exibir a mensagem “Formato de e‑mail inválido”
 
-  @mensagem @error
-  Scenario: Mensagens de erro são claras e objetivas
-    Given o usuário tenta fazer login com senha vazia
-    When ele clica no botão "Entrar"
-    Then o sistema deve exibir a mensagem "Senha não pode estar em branco"
+  Scenario: Menus e links consistentes em todas as páginas
+    Given o usuário está na página “Dashboard”
+    And está na página “Extrato”
+    And está na página “Transferir”
+    When ele verifica os links de navegação em cada página
+    Then todos os links devem ser idênticos e apontar para os mesmos destinos
 
-  @menu @consistent
-  Scenario: Links e menus são consistentes em todas as páginas
-    Given o usuário abre a página inicial
-    And ele abre a página de cadastro
-    And ele abre a página de extrato
-    Then em todas as páginas os mesmos itens de menu devem estar presentes e visíveis
 ```
