@@ -33,7 +33,7 @@ jobs:
       - name: Generate Tests from BDD
         run: python ai/generate/generate_tests_from_bdd.py
         env:
-          GROQ_API_KEY: 
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
 
       - name: Commit BDD and tests
         run: |
