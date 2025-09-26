@@ -1,158 +1,65 @@
-## 1. Testes que falharam
+## 1. Quais testes falharam?
 
-| # | Nome do teste (em português) | Resultado | Linha do log |
-|---|------------------------------|-----------|--------------|
-| 1 | **Login válido** | Falhou | `2025-09-26T14:48:28.274Z - Login válido falhou` |
-| 2 | **Usuário deve atualizar telefone com sucesso** | Falhou | `2025-09-26T14:48:31.077Z - Usuário deve atualizar telefone com sucesso falhou` |
-| 3 | **Usuário deve atualizar telefone com campo vazio** | Falhou | `2025-09-26T14:48:42.001Z - Usuário deve atualizar telefone com campo vazio falhou` |
+| Teste | Linha no log | Descrição |
+|-------|--------------|-----------|
+| **Login válido falhou** | `2025-09-26T14:51:24.536Z` | O teste que valida que o usuário consegue logar com credenciais válidas não passou. |
+| **Usuário deve atualizar telefone com sucesso falhou** | `2025-09-26T14:51:27.124Z` | O teste que verifica se o telefone pode ser atualizado com dados válidos acabou em timeout. |
+| **Usuário deve atualizar telefone com campo vazio falhou** | `2025-09-26T14:51:38.022Z` | O teste que garante que a atualização não é permitida quando o campo telefone está vazio também terminou em timeout. |
 
 ---
 
 ## 2. Motivo de cada falha
 
-### 1️⃣ Login válido
-```
-Error: expect(locator).toContainText(expected) failed
-Locator: locator('#leftPanel > p')
-Expected string: "Welcome"
-Received: <element(s) not found>
-Timeout: 5000ms
-```
-- **O que aconteceu?**  
-  O teste esperava encontrar um `<p>` dentro de `#leftPanel` contendo o texto “Welcome”. O Playwright não encontrou nenhum elemento que correspondesse ao seletor `#leftPanel > p` dentro dos 5 s de timeout.
-- **Possíveis causas**  
-  1. **Seleção errada** – o elemento pode ter outro ID, classe, ou pode estar dentro de um iframe.  
-  2. **Falha na autenticação** – o usuário não foi realmente logado, então o painel de boas‑vindas nunca aparece.  
-  3. **Página não carregada** – a página pode estar demorando mais que 5 s para renderizar o painel.  
-  4. **JavaScript assíncrono** – o conteúdo pode ser carregado via AJAX depois de um certo atraso.
-
-### 2️⃣ Usuário deve atualizar telefone com sucesso
-```
-Test timeout of 10000ms exceeded.
-```
-- **O que aconteceu?**  
-  O teste excedeu o limite de 10 s sem que a expectativa fosse satisfeita. Isso indica que alguma operação assíncrona (ex.: envio de formulário, espera de resposta do servidor, mudança de UI) nunca concluiu ou o elemento de verificação nunca apareceu.
-- **Possíveis causas**  
-  1. **Endpoint lento / bloqueado** – a requisição de atualização pode estar demorando mais que 10 s ou não sendo chamada.  
-  2. **Evento de UI não disparado** – o formulário pode não ter sido submetido corretamente (botão invisível, erro de JavaScript).  
-  3. **Seletores incorretos** – o elemento que o teste verifica após a submissão pode não existir ou ter um seletor diferente.
-
-### 3️⃣ Usuário deve atualizar telefone com campo vazio
-```
-Test timeout of 10000ms exceeded.
-```
-- **O que aconteceu?**  
-  Mesmo aqui, o teste não concluiu em 10 s. Como se trata de um cenário de “campo vazio”, o erro provavelmente ocorre porque o formulário não foi rejeitado como esperado (ex.: mensagem de erro não aparece) ou a página não reaja à tentativa de envio.
-- **Possíveis causas**  
-  1. **Validação não disparada** – o JavaScript que valida o campo pode não ter sido executado.  
-  2. **Seletores de mensagem de erro** – o elemento de mensagem de erro pode ter um seletor diferente ou estar escondido.  
-  3. **Timeout curto** – a aplicação pode precisar de mais tempo para processar o submit e exibir a mensagem.
+| Teste | Motivo principal (conforme log) | Explicação técnica |
+|-------|--------------------------------|--------------------|
+| **Login válido falhou** | `Locator: locator('#leftPanel > p')` não encontrou o elemento | A expectativa era que, depois do login, fosse exibida uma `<p>` dentro do elemento `#leftPanel` contendo a palavra *“Welcome”*. O Playwright tentou encontrar o elemento por 5 s (`Timeout: 5000ms`) e não conseguiu.  Isso pode ocorrer por:  <br>- O seletor está incorreto (por exemplo, o elemento pode ter outro caminho, ou usar um ID dinâmico).  <br>- A página não terminou de renderizar/redirectou ainda quando o check foi disparado.  <br>- O login falhou silenciosamente e a página de erro não exibe a `<p>`. |
+| **Usuário deve atualizar telefone com sucesso falhou** | `Test timeout of 10000ms exceeded.` | O teste não terminou dentro do limite de 10 s. Isso normalmente significa que uma ação assíncrona (click, envio de formulário, navegação, espera de resposta de API) não aconteceu ou não foi aguardada corretamente. O Playwright esperou 10 s para a última asserção ou operação e não recebeu a confirmação esperada. |
+| **Usuário deve atualizar telefone com campo vazio falhou** | `Test timeout of 10000ms exceeded.` | Mesmo motivo do teste anterior: o fluxo de atualização (ou a verificação de erro) não completou em 10 s. Provavelmente o teste tentou clicar em “Salvar” com o campo vazio, mas não havia nenhuma espera para o diálogo de erro aparecer ou a página não respondeu. |
 
 ---
 
 ## 3. Sugestões de correção
 
-### 3.1. Login válido
+### 3.1. Correção do teste “Login válido falhou”
 
-| Passo | Ação sugerida | Como fazer |
-|-------|---------------|------------|
-| **a** | Verifique se o login realmente ocorre | Use `await page.waitForNavigation()` ou `await page.waitForURL()` após enviar o formulário. |
-| **b** | Confirme que o elemento existe | `await expect(page.locator('#leftPanel > p')).toBeVisible();` antes de testar o texto. |
-| **c** | Ajuste o timeout se necessário | `await expect(page.locator('#leftPanel > p')).toContainText('Welcome', { timeout: 10000 });` |
-| **d** | Use `debug()` ou `screenshot` no ponto de falha | `await page.screenshot({ path: 'login-fail.png' });` |
-| **e** | Caso o painel esteja dentro de um iframe | `const frame = page.frame({ name: /nomeDoIframe/i });` e use `frame.locator('#leftPanel > p')`. |
+| Problema | Como corrigir |
+|----------|---------------|
+| **Seletório inválido ou frágil** | 1. Abra o site em modo de inspeção (DevTools) e verifique a estrutura atual da página. <br>2. Se o elemento que contém “Welcome” tem um `id`, `data-testid`, ou outra classe estável, use‑o: `await expect(page.locator('#welcome-message')).toContainText('Welcome');` <br>3. Se a estrutura mudou, atualize o seletor. |
+| **Não aguarda a navegação/rotação** | 1. Depois do `await page.fill()` e `await page.click('text=Login')`, adicione: <br>`await page.waitForNavigation({ waitUntil: 'networkidle' });` <br>2. Ou use `await page.waitForSelector('#leftPanel > p', { state: 'visible', timeout: 10000 });` antes da asserção. |
+| **Timeout pequeno** | Se a página demora mais que 5 s para carregar a mensagem, aumente o timeout: <br>`await expect(page.locator('#leftPanel > p')).toContainText('Welcome', { timeout: 15000 });` |
 
-### 3.2. Atualização de telefone (sucesso)
+### 3.2. Correção dos testes “Usuário deve atualizar telefone”
 
-| Passo | Ação sugerida | Como fazer |
-|-------|---------------|------------|
-| **a** | Garanta que o formulário seja submetido | `await page.locator('#submitBtn').click();` ou `await page.keyboard.press('Enter');`. |
-| **b** | Espere a resposta do servidor | `await page.waitForResponse(response => response.url().includes('/api/phone') && response.status() === 200);` |
-| **c** | Verifique a mudança de UI | `await expect(page.locator('#phoneSuccess')).toBeVisible({ timeout: 15000 });` |
-| **d** | Aumente o timeout apenas se a rede for lenta | `await expect(page.locator('#phoneSuccess')).toContainText('Telefone atualizado', { timeout: 20000 });` |
-| **e** | Inspecione o console da página | `page.on('console', msg => console.log(msg.text()));` para ver erros JavaScript. |
+Os dois testes falharam por timeout, indicando que uma etapa assíncrona não foi aguardada corretamente.  
+Para ambos, siga os passos abaixo:
 
-### 3.3. Atualização de telefone (campo vazio)
+| Etapa | O que fazer |
+|-------|-------------|
+| **Aguardar a página/elemento** | 1. Após clicar em “Salvar”, espere pelo elemento que indica sucesso ou erro: <br>`await expect(page.locator('#phone-success')).toBeVisible({ timeout: 12000 });`<br>ou <br>`await expect(page.locator('.error-message')).toBeVisible({ timeout: 12000 });` |
+| **Aguardar a resposta da API** | Se o formulário dispara uma chamada API, use: <br>`const [response] = await Promise.all([ page.waitForResponse('**/api/update-phone'), page.click('text=Salvar') ]);` <br>Verifique `response.ok()` para determinar sucesso ou erro. |
+| **Evitar promessas não resolvidas** | Certifique-se de `await` todas as chamadas assíncronas. Se o teste usar `page.click()` seguido de `expect(...)` sem `await`, o teste continuará sem esperar. |
+| **Verificar redirecionamentos** | Caso o clique em “Salvar” redirecione para outra página, use `await page.waitForNavigation()` antes da asserção. |
+| **Timeouts mais longos** | Se a operação pode demorar mais de 10 s (por exemplo, porque a API está lenta), aumente o timeout no `expect`: <br>`await expect(page.locator('#phone-success')).toBeVisible({ timeout: 20000 });` |
+| **Logs de depuração** | Adicione `console.log(await page.content());` antes da asserção para inspecionar o HTML que está sendo renderizado no momento da falha. Isso ajuda a perceber se o elemento ainda não existe ou foi removido. |
 
-| Passo | Ação sugerida | Como fazer |
-|-------|---------------|------------|
-| **a** | Submeta o formulário com campo vazio | `await page.locator('#phoneField').fill('');` e depois `await page.locator('#submitBtn').click();`. |
-| **b** | Espere a mensagem de erro | `await expect(page.locator('#errorMessage')).toBeVisible({ timeout: 15000 });` |
-| **c** | Confirme o texto da mensagem | `await expect(page.locator('#errorMessage')).toContainText('Telefone não pode ser vazio');` |
-| **d** | Se o erro for exibido em outro lugar (por ex.: tooltip), ajuste o seletor. |
-| **e** | Verifique se a validação acontece no frontend ou backend | Se for backend, espere a resposta 400 e então busque por um elemento de erro. |
+### 3.3. Boas práticas gerais
 
----
-
-## 4. Boas práticas gerais
-
-| Boas práticas | Por quê? |
-|---------------|----------|
-| **Use `await` em todas as chamadas assíncronas** | Evita que o teste avance antes da ação ser concluída. |
-| **Evite timeouts fixos muito curtos** | Aplicações modernas podem demorar mais em testes de integração; use `timeout: 20000` se necessário. |
-| **Utilize `waitForSelector` ou `waitForResponse`** | Garanta que o elemento ou a resposta de rede esteja pronta antes de fazer asserções. |
-| **Registre `screenshot` e `trace`** | Quando algo falha, ter imagens ou logs de rastreamento ajuda a diagnosticar. |
-| **Mantenha os seletores claros e únicos** | Evite ambiguidades que podem levar a “element not found”. |
-| **Considere usar `fixture` ou `beforeEach`** para garantir que o estado da aplicação esteja limpo antes de cada teste. |
-| **Teste as mensagens de erro em ambos os lados (frontend e backend)** | Assim você não depende apenas de um único fluxo. |
+| Prática | Por quê |
+|---------|---------|
+| **Use `data-testid`** | Crie atributos `data-testid` nos elementos que são críticos para testes. Eles não mudam com estilização e são mais estáveis. |
+| **Evite `page.waitForTimeout`** | Use esperas explícitas (`waitForSelector`, `waitForResponse`) em vez de `page.waitForTimeout`, que podem deixar o teste frágil. |
+| **Isolar testes** | Certifique-se de que cada teste comece do estado inicial (ex.: login limpo, formulário vazio). Use `beforeEach` e `afterEach` para limpar cookies/localStorage. |
+| **Configurar `timeout` global** | Em `playwright.config.ts` ajuste `timeout` e `expect.timeout` para valores que façam sentido para a aplicação e não sejam “tropically” curtos. |
+| **Capturar screenshots/trace em falhas** | Ative `screenshot: 'on'` e `trace: 'on'` no `project` do config; isso gera evidências visuais que facilitam a correção. |
+| **Testar em modo headless** | O modo headless pode revelar problemas de timing que aparecem apenas em execução sem UI. |
 
 ---
 
-## 5. Exemplo de correção rápida
+## Resumo rápido de correções
 
-```ts
-test.describe('Usuário deve atualizar telefone', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('https://app.exemplo.com/login');
-    await page.fill('#email', 'user@example.com');
-    await page.fill('#password', 'senhaSegura');
-    await page.click('#btnLogin');
-    await page.waitForNavigation();               // garante que o painel foi carregado
-  });
+| Teste | Correção imediata |
+|-------|-------------------|
+| **Login válido** | - Atualize o seletor para um elemento estável.<br>- Aguarde navegação ou a presença do elemento com `waitForSelector`. |
+| **Atualização de telefone (sucesso e campo vazio)** | - Adicione esperas explícitas (API response, elemento de sucesso/erro, navegação).<br>- Garanta `await` em todas as chamadas.<br>- Ajuste timeout se a operação for lenta. |
 
-  test('com sucesso', async ({ page }) => {
-    await page.click('#menuTelefone');
-    await page.fill('#phoneField', '11987654321');
-
-    // Submete e espera a resposta do servidor
-    await Promise.all([
-      page.waitForResponse(r => r.url().includes('/api/telefone') && r.status() === 200),
-      page.click('#btnSubmitPhone')
-    ]);
-
-    // Valida a mensagem de sucesso
-    await expect(page.locator('#phoneSuccess')).toHaveText(
-      'Telefone atualizado com sucesso',
-      { timeout: 15000 }
-    );
-  });
-
-  test('com campo vazio', async ({ page }) => {
-    await page.click('#menuTelefone');
-    await page.fill('#phoneField', '');          // deixa vazio
-    await page.click('#btnSubmitPhone');
-
-    // Espera a mensagem de erro
-    await expect(page.locator('#errorMessage')).toHaveText(
-      'O campo telefone não pode ficar vazio',
-      { timeout: 15000 }
-    );
-  });
-});
-```
-
-- **`Promise.all`** garante que a navegação/response ocorra antes de continuar.  
-- **Timeouts aumentados** (15 s) dão espaço para a rede e o processamento.  
-- **Seletores claros** (`#phoneSuccess`, `#errorMessage`) evitam colisões.
-
----
-
-## 6. Próximos passos
-
-1. **Revisar os seletores** no código de teste e na aplicação; confirme se `#leftPanel > p` realmente existe.  
-2. **Verificar logs da aplicação** (browser console, rede) para detectar possíveis erros JavaScript ou falhas de API.  
-3. **Executar os testes em modo debug** (`playwright test --debug`) para pausar no ponto de falha e inspecionar o estado da página.  
-4. **Ajustar os timeouts** conforme o desempenho real da aplicação.  
-5. **Adicionar `page.screenshot({ path: 'erro.png' })`** ao ponto de falha para capturar o DOM atual.
-
-Com essas ações você deve conseguir identificar se o problema está nos testes, nos seletores, na aplicação ou na configuração do tempo de espera. Boa sorte!
+Implementando essas mudanças, os testes deverão passar ou, no mínimo, falhar em etapas mais claras, facilitando a depuração futura. Boa sorte!
