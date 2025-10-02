@@ -1,0 +1,61 @@
+## 1. Quais testes falharam?
+
+| Data | Hora | Teste | Resultado |
+|------|------|-------|-----------|
+| 2025‑10‑02 | 14:09:26 | **Login inválido falhou** | **Falhou** |
+| 2025‑10‑02 | 14:09:28 | **Usuário deve atualizar telefone com campo vazio falhou** | **Falhou** |
+
+### 1.1 Login inválido falhou  
+O teste tentou validar que a mensagem de erro exibida ao submeter credenciais inválidas corresponda a “An internal error has occurred and has been logged.” Entretanto o navegador retornou: “The username and password could not be verified.”
+
+### 1.2 Usuário deve atualizar telefone com campo vazio falhou  
+O teste procurou um elemento com XPath `//*[@id="phone-error"]` e esperava que ele contenha o texto “Phone is required.” Contudo o Playwright não encontrou nenhum elemento que correspondesse ao seletor dentro de 5 s.
+
+---
+
+## 2. Motivo de cada falha
+
+| Teste | Motivo provável | Evidências do log |
+|-------|----------------|-------------------|
+| Login inválido | **Mensagem inesperada** – O backend está retornando um erro de validação de credenciais em vez de um erro interno. | `Expected string: "An internal error has occurred and has been logg..."` <br>`Received string: "The username and password could not be verifi..."` |
+| Atualizar telefone vazio | **Elemento não encontrado** – O elemento de erro não está presente, seja porque o campo não acionou a validação, seja porque o seletor está errado. | `Received: <element(s) not found>` <br>`Locator('//*[@id="phone-error"]')` |
+
+### Possíveis causas detalhadas
+
+| Teste | Causa | Como identificar |
+|-------|-------|-------------------|
+| Login inválido | 1. A mensagem esperada foi copiada de um teste que simulava um erro de servidor; o teste atual está testando a validação de credenciais.<br>2. O backend foi alterado e agora devolve “The username and password could not be verified.” | - Verificar o código do endpoint de login.<br>- Checar se existe algum mock/fixture que força um erro interno. |
+| Atualizar telefone vazio | 1. O elemento `<span id="phone-error">…</span>` pode ter sido renomeado ou removido.<br>2. O campo de telefone não foi submetido ou a validação não foi disparada antes da verificação.<br>3. O XPath usado (`//*[@id="phone-error"]`) é demasiado genérico ou não reflete a estrutura atual. | - Inspecionar a página no modo de depuração e confirmar a presença do ID.<br>- Verificar a lógica de validação no código‑fonte (React, Angular, etc.).<br>- Usar `page.locator('#phone-error')` ou `page.getByTestId` se o ID for alterado. |
+
+---
+
+## 3. Sugestões de correção
+
+### 3.1 Login inválido falhou
+
+| Estratégia | Passos | Observação |
+|------------|--------|------------|
+| **Atualizar a expectativa** | 1. Substitua a string esperada no teste por “The username and password could not be verified.” <br>2. Adicione um comentário explicando que a mensagem mudou para evitar confusões futuras. | Se o objetivo for testar um erro interno, então deve‑se simular esse erro via mock ou alterar o cenário. |
+| **Teste o erro interno** | 1. Se o requisito for validar o erro interno, faça o mock do endpoint para retornar um 500 ou mensagem de erro interno.<br>2. Ajuste o `expect` para a string correta. | Use `http.request.intercept` ou `playwright-mock` para simular o erro. |
+| **Verificar a lógica de mensagens** | 1. Abra o backend ou serviço de autenticação e veja as mensagens que ele devolve em cada condição. <br>2. Caso haja variação (por exemplo, “Login failed” vs “Internal error”), teste ambos separadamente. | Pode ser útil criar um arquivo de constantes para mensagens, assim o teste e o código compartilham a mesma string. |
+
+### 3.2 Usuário deve atualizar telefone com campo vazio falhou
+
+| Estratégia | Passos | Observação |
+|------------|--------|------------|
+| **Confirmar seletor** | 1. Inspecione a página na ferramenta de desenvolvedor. <br>2. Verifique se há realmente um elemento com `id="phone-error"` ou se o ID foi alterado para algo como `phoneError`. <br>3. Se for diferente, atualize o XPath ou, melhor, use um seletor CSS: `page.locator('#phone-error')` ou um atributo `data-test-id`. | XPath é mais frágil. CSS ou `getByTestId` são mais estáveis. |
+| **Garantir que a validação seja disparada** | 1. No teste, clique no botão “Salvar” ou “Atualizar” depois de deixar o campo vazio.<br>2. Adicione um `await page.waitForTimeout(100);` (ou algo mais robusto) para dar tempo ao JavaScript de validar.<br>3. Depois disso, procure pelo elemento. | Se o botão não dispara a validação, o teste sempre falhará. |
+| **Usar `toContainText` no elemento correto** | 1. Depois de localizar o elemento, use: `await expect(locator).toContainText('Phone is required.');` <br>2. Se o elemento ainda não aparece, aumente o timeout ou use `waitForSelector`. | `page.waitForSelector('#phone-error', { state: 'visible', timeout: 5000 });` pode ser mais confiável. |
+| **Adicionar logs de depuração** | 1. Em caso de falha, capture um screenshot: `await page.screenshot({ path: 'error.png' });` <br>2. Capturar o HTML da página: `console.log(await page.content());` | Facilita identificar se a página mudou ou se há outro elemento de erro. |
+| **Revisar a lógica de testes** | 1. Certifique‑se de que o teste não está sendo executado em um estado onde o campo já está preenchido.<br>2. Se houver pré‑condições (login, navegação), garanta que elas estejam corretas. | Um fluxo errado pode impedir a renderização do erro. |
+
+---
+
+## Resumo rápido
+
+| Teste | Falha | Solução recomendada |
+|-------|-------|---------------------|
+| Login inválido falhou | Texto de erro não corresponde | Atualizar a string esperada ou simular o erro interno |
+| Usuário deve atualizar telefone com campo vazio falhou | Elemento de erro não encontrado | Confirmar seletor, disparar validação, usar CSS/`data-testid`, capturar screenshot |
+
+Implementando essas correções, os testes deverão passar sem falhas e refletir corretamente o comportamento da aplicação. Se surgirem novos erros, verifique sempre o log completo – ele costuma indicar exatamente a expectativa versus a realidade. Boa codificação!
