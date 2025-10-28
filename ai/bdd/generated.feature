@@ -1,225 +1,185 @@
+## Gherkin – ParaBank Acceptance Scenarios  
+*(All scenarios are written in Portuguese, using the standard Gherkin syntax.)*
+
 ```gherkin
-# ======================================================================
-# ParaBank – Cenários BDD em Gherkin (Português)
-# ======================================================================
-
-# 1. Feature: Cadastro de Usuário
 Feature: Cadastro de Usuário
-  Para que o sistema permita o registro de novos usuários
-  o usuário deve preencher todos os campos obrigatórios
-  e receber mensagens claras em caso de erro.
+  Como um novo usuário
+  Eu quero registrar-me no ParaBank
+  Para que eu possa acessar as funcionalidades bancárias
 
-  @Cadastro
-  Scenario Outline: Cadastro bem-sucedido
-    Dado que o usuário acessa a tela de cadastro
-    Quando ele preenche os campos obrigatórios com "<nome>", "<sobrenome>", "<email>", "<telefone>", "<cep>", "<senha>"
-    E clica em “Cadastrar”
-    Então a mensagem de sucesso "<mensagem_sucesso>" deve ser exibida
-    E o usuário deve conseguir fazer login com "<email>" e "<senha>"
+  Scenario: Cadastro bem-sucedido
+    Given o usuário preenche todos os campos obrigatórios com valores válidos
+    When o usuário envia o formulário de cadastro
+    Then a página exibe a mensagem "Cadastro concluído com sucesso"
+    And o usuário pode fazer login com as credenciais recém‑criada
 
+  Scenario Outline: Cadastro com campo obrigatório vazio
+    Given o usuário preenche todos os campos obrigatórios, exceto o "<campo>"
+    When o usuário envia o formulário de cadastro
+    Then a página exibe a mensagem de erro "O campo '<campo>' é obrigatório"
     Examples:
-      | nome      | sobrenome | email                | telefone     | cep     | senha   | mensagem_sucesso                 |
-      | João      | Silva     | joao.silva@email.com | (11)987654321| 01001000| senha123| "Cadastro realizado com sucesso!"|
+      | campo       |
+      | Nome        |
+      | Email       |
+      | Telefone    |
+      | CEP         |
+      | Senha       |
+      | Confirmação |
 
-  @Cadastro @Validacao
-  Scenario Outline: Cadastro com campo obrigatório em branco
-    Dado que o usuário acessa a tela de cadastro
-    Quando ele deixa em branco o campo "<campo>"
-    E clica em “Cadastrar”
-    Então a mensagem de erro "<mensagem_erro>" deve ser exibida
-
-    Examples:
-      | campo        | mensagem_erro                                 |
-      | nome         | "Nome é obrigatório"                          |
-      | sobrenome    | "Sobrenome é obrigatório"                     |
-      | email        | "Email é obrigatório"                         |
-      | telefone     | "Telefone é obrigatório"                      |
-      | cep          | "CEP é obrigatório"                           |
-      | senha        | "Senha é obrigatória"                         |
-
-  @Cadastro @Validacao
   Scenario Outline: Cadastro com dados inválidos
-    Dado que o usuário acessa a tela de cadastro
-    Quando ele preenche "<campo>" com o valor "<valor_invalido>"
-    E clica em “Cadastrar”
-    Então a mensagem de erro "<mensagem_erro>" deve ser exibida
-
+    Given o usuário preenche o campo "<campo>" com "<valor_invalido>"
+    When o usuário envia o formulário de cadastro
+    Then a página exibe a mensagem de erro "<mensagem>"
     Examples:
-      | campo      | valor_invalido           | mensagem_erro                                 |
-      | telefone   | "abc123"                 | "Telefone inválido. Use apenas números."      |
-      | cep        | "123"                    | "CEP inválido. Deve conter 8 dígitos."        |
-      | email      | "usuario.com"            | "Email inválido. Use o formato nome@domínio." |
+      | campo   | valor_invalido          | mensagem                                     |
+      | Email   | usuario@          | "Formato de e‑mail inválido"                 |
+      | Telefone| 123ABC            | "Telefone deve conter apenas números"        |
+      | CEP     | 12.345-678        | "CEP inválido. Use apenas dígitos"           |
 
-# 2. Feature: Login
+---
+
 Feature: Login
-  Para que o usuário possa acessar sua conta
-  o sistema deve validar credenciais e redirecionar para a página inicial.
+  Como um usuário cadastrado
+  Eu quero entrar no sistema
+  Para que eu possa acessar minha conta
 
-  @Login
-  Scenario Outline: Login bem-sucedido
-    Dado que o usuário está na tela de login
-    Quando ele digita "<email>" e "<senha>"
-    E clica em “Entrar”
-    Então o usuário é redirecionado para a página inicial da conta
-    E a mensagem “Bem‑vindo, <nome>” é exibida
+  Scenario: Login com credenciais válidas
+    Given o usuário está na página de login
+    When o usuário insere um e‑mail e senha válidos
+    And clica no botão "Entrar"
+    Then o sistema redireciona para a página inicial da conta
+    And exibe a mensagem "Bem‑vindo, <Nome>"
 
-    Examples:
-      | email                | senha   | nome     |
-      | joao.silva@email.com | senha123| João     |
-
-  @Login @Validacao
   Scenario Outline: Login com credenciais inválidas
-    Dado que o usuário está na tela de login
-    Quando ele digita "<email>" e "<senha>"
-    E clica em “Entrar”
-    Então a mensagem de erro "<mensagem_erro>" é exibida
-
+    Given o usuário está na página de login
+    When o usuário insere "<campo>" "<valor>"
+    And clica no botão "Entrar"
+    Then o sistema exibe a mensagem "<mensagem>"
     Examples:
-      | email                | senha   | mensagem_erro                     |
-      | joao.silva@email.com | wrong   | "Credenciais inválidas."          |
-      | wrong@email.com      | senha123| "Credenciais inválidas."          |
-      |                         |         | "Preencha email e senha."        |
+      | campo   | valor              | mensagem                                |
+      | e‑mail  | usuario@exemplo.com| "Credenciais inválidas"                 |
+      | senha   | senhaErrada        | "Credenciais inválidas"                 |
+      | ambos   | errado@example.com| "Credenciais inválidas"                 |
 
-# 3. Feature: Acesso à Conta – Saldo e Extrato
+---
+
 Feature: Acesso à Conta – Saldo e Extrato
-  O sistema deve exibir saldo atualizado e extrato em ordem cronológica.
+  Como usuário autenticado
+  Eu quero ver saldo e extrato
+  Para ter controle das minhas finanças
 
-  @Conta @Saldo
-  Scenario: Visualização do saldo após transação
-    Dado que o usuário está na página inicial
-    Quando ele faz uma transferência de R$ 500,00
-    Então o saldo exibido deve ser "<saldo_atualizado>"
-    E o extrato lista a transferência em ordem cronológica
+  Scenario: Exibição de saldo atualizado após operação
+    Given o usuário possui saldo inicial de R$ 1.000,00
+    And realizou um depósito de R$ 500,00
+    When o usuário acessa a página de saldo
+    Then o saldo exibido é R$ 1.500,00
 
-    Examples:
-      | saldo_atualizado |
-      | R$ 2.500,00       |
+  Scenario: Listagem de transações recentes no extrato
+    Given o usuário realizou três transações nas últimas 24h
+    When o usuário abre o extrato
+    Then as transações aparecem em ordem cronológica, da mais recente à mais antiga
 
-  @Conta @Extrato
-  Scenario: Exibição de extrato em ordem cronológica
-    Dado que o usuário está na página de extrato
-    Quando ele visualiza as transações recentes
-    Então o extrato deve listar as transações do mais recente ao mais antigo
+---
 
-# 4. Feature: Transferência de Fundos
 Feature: Transferência de Fundos
-  O usuário deve transferir valores entre contas, respeitando saldo.
+  Como usuário autenticado
+  Eu quero transferir dinheiro para outra conta
+  Para pagar ou dividir despesas
 
-  @Transferencia @Sucesso
-  Scenario: Transferência válida
-    Dado que o usuário está na tela de transferência
-    Quando ele seleciona conta de origem "<conta_orig>" e conta de destino "<conta_dest>" e valor de R$ <valor>
-    E confirma a transferência
-    Então o valor R$ <valor> deve ser debitado de "<conta_orig>"
-    E creditado em "<conta_dest>"
-    E a transação aparece no histórico de ambas as contas
+  Scenario: Transferência bem‑sucedida
+    Given o usuário tem saldo de R$ 2.000,00 na conta A
+    And selecionou a conta B como destino
+    When o usuário envia R$ 300,00 para a conta B
+    Then a conta A é debitada em R$ 300,00
+    And a conta B é creditada em R$ 300,00
+    And ambas as contas registram a transação no histórico
 
+  Scenario Outline: Transferência com valor superior ao saldo
+    Given o usuário tem saldo de R$ <saldo> na conta A
+    And selecionou a conta B como destino
+    When o usuário tenta enviar R$ <valor> para a conta B
+    Then o sistema exibe a mensagem "Saldo insuficiente"
     Examples:
-      | conta_orig | conta_dest | valor |
-      | 123456     | 654321     | 200   |
+      | saldo | valor |
+      | 500   | 600   |
+      | 100   | 150   |
 
-  @Transferencia @SaldoInsuficiente
-  Scenario: Transferência com valor superior ao saldo
-    Dado que o usuário está na tela de transferência
-    Quando ele seleciona conta de origem "<conta_orig>" e conta de destino "<conta_dest>" e valor de R$ <valor>
-    E tenta confirmar a transferência
-    Então a mensagem de erro "<mensagem_erro>" é exibida
-    E nenhum débito ou crédito ocorre
+  Scenario: Transferência para conta inexistente
+    Given o usuário selecionou a conta "999999" como destino
+    When o usuário tenta enviar R$ 200,00 para a conta
+    Then o sistema exibe a mensagem "Conta de destino não encontrada"
 
-    Examples:
-      | conta_orig | conta_dest | valor | mensagem_erro                     |
-      | 123456     | 654321     | 10.000| "Saldo insuficiente para essa transferência."|
+---
 
-# 5. Feature: Solicitação de Empréstimo
 Feature: Solicitação de Empréstimo
-  O usuário solicita um empréstimo informando valor e renda anual.
-  O sistema responde com aprovação ou negação.
+  Como usuário autenticado
+  Eu quero solicitar um empréstimo
+  Para financiar meus projetos
 
-  @Emprestimo @Aprovado
-  Scenario: Solicitação de empréstimo aprovada
-    Dado que o usuário está na tela de solicitação de empréstimo
-    Quando ele preenche valor de R$ <valor> e renda anual de R$ <renda>
-    E envia a solicitação
-    Então a mensagem "<mensagem>" é exibida
-    E o status do empréstimo é “Aprovado”
+  Scenario: Empréstimo aprovado
+    Given o usuário informa valor R$ 20.000,00 e renda anual R$ 120.000,00
+    When o usuário envia a solicitação
+    Then o sistema exibe a mensagem "Empréstimo aprovado"
 
-    Examples:
-      | valor | renda  | mensagem                        |
-      | 5.000 | 50.000 | "Empréstimo aprovado!"          |
+  Scenario: Empréstimo negado por renda insuficiente
+    Given o usuário informa valor R$ 20.000,00 e renda anual R$ 30.000,00
+    When o usuário envia a solicitação
+    Then o sistema exibe a mensagem "Empréstimo negado – renda insuficiente"
 
-  @Emprestimo @Negado
-  Scenario: Solicitação de empréstimo negada
-    Dado que o usuário está na tela de solicitação de empréstimo
-    Quando ele preenche valor de R$ <valor> e renda anual de R$ <renda>
-    E envia a solicitação
-    Então a mensagem "<mensagem>" é exibida
-    E o status do empréstimo é “Negado”
+---
 
-    Examples:
-      | valor | renda  | mensagem                        |
-      | 50.000| 10.000 | "Empréstimo negado: renda insuficiente." |
-
-# 6. Feature: Pagamento de Contas
 Feature: Pagamento de Contas
-  O usuário registra pagamento de conta com todos os detalhes.
+  Como usuário autenticado
+  Eu quero pagar contas recorrentes ou pontuais
+  Para manter meus débitos em dia
 
-  @Pagamento @Sucesso
-  Scenario: Pagamento de conta agendado
-    Dado que o usuário está na tela de pagamento de contas
-    Quando ele informa beneficiário "<beneficiario>", endereço "<endereco>", cidade "<cidade>", estado "<estado>", CEP "<cep>", telefone "<telefone>", conta de destino "<conta_dest>", valor de R$ <valor> e data "<data>"
-    E confirma o pagamento
-    Então a mensagem "<mensagem>" é exibida
-    E o pagamento aparece no histórico de transações
-    E o pagamento será executado na data "<data>"
+  Scenario: Pagamento pontual imediato
+    Given o usuário preenche beneficiário "João Silva"
+    And endereço "Rua Exemplo, 123"
+    And cidade "São Paulo"
+    And estado "SP"
+    And CEP "01001-000"
+    And telefone "11987654321"
+    And conta de destino "123456"
+    And valor R$ 150,00
+    And data de pagamento "Hoje"
+    When o usuário confirma o pagamento
+    Then o sistema registra a transação no histórico
+    And exibe a mensagem "Pagamento efetuado com sucesso"
 
-    Examples:
-      | beneficiario | endereco           | cidade | estado | cep      | telefone     | conta_dest | valor | data      | mensagem                          |
-      | Maria        | Rua das Flores, 10 | SP     | SP     | 01001-000| (11)912345678| 123456     | 150   | 2025-11-01| "Pagamento agendado com sucesso!"|
+  Scenario: Pagamento agendado para data futura
+    Given o usuário define data de pagamento "2025‑12‑01"
+    When o usuário confirma o pagamento
+    Then o sistema exibe a mensagem "Pagamento agendado para 01/12/2025"
+    And a transação aparece no histórico com status "Agendado"
 
-  @Pagamento @Validacao
-  Scenario Outline: Pagamento com campo obrigatório vazio
-    Dado que o usuário está na tela de pagamento de contas
-    Quando ele deixa em branco o campo "<campo>"
-    E tenta confirmar o pagamento
-    Então a mensagem de erro "<mensagem_erro>" é exibida
+---
 
-    Examples:
-      | campo         | mensagem_erro                          |
-      | beneficiario  | "Beneficiário é obrigatório"           |
-      | endereco      | "Endereço é obrigatório"               |
-      | cidade        | "Cidade é obrigatória"                 |
-      | estado        | "Estado é obrigatório"                 |
-      | cep           | "CEP é obrigatório"                    |
-      | telefone      | "Telefone é obrigatório"               |
-      | conta_dest    | "Conta de destino é obrigatória"       |
-      | valor         | "Valor é obrigatório"                  |
-      | data          | "Data de pagamento é obrigatória"      |
+Feature: Navegação e Usabilidade
+  Como usuário
+  Eu quero navegar pelo sistema sem erros
+  Para ter uma experiência consistente
 
-# 7. Feature: Requisitos Gerais de Navegação e Usabilidade
-Feature: Requisitos Gerais de Navegação e Usabilidade
-  As páginas devem carregar corretamente e menus/links devem ser consistentes.
+  Scenario: Carregamento sem erros de navegação
+    Given o usuário navega por todas as páginas do aplicativo
+    Then todas as páginas carregam sem mensagens de erro
 
-  @Navegacao @Carregamento
-  Scenario: Todas as páginas carregam sem erros
-    Dado que o usuário navega para cada página do sistema
-    Quando a página é carregada
-    Então não há erros de navegação ou carregamento
+  Scenario: Consistência de links e menus
+    Given o usuário acessa qualquer página
+    When ele verifica o cabeçalho
+    Then todos os menus e links estão presentes e funcionam
+    And o link "Minha Conta" leva ao painel correto
 
-  @Usabilidade @Consistencia
-  Scenario: Menus e links são consistentes em todas as páginas
-    Dado que o usuário acessa diferentes páginas (Login, Cadastro, Conta, Transferência, etc.)
-    Quando ele observa os menus e links
-    Então cada página exibe o mesmo menu principal e links correspondentes
-
-  @Usabilidade @Mensagens
-  Scenario: Mensagens de erro são claras e objetivas
-    Dado que o usuário tenta realizar uma operação inválida
-    Quando o sistema exibe a mensagem de erro
-    Então a mensagem deve ser curta, direta e indicar a ação necessária para correção
-
+  Scenario: Exibição clara de mensagens de erro
+    Given o usuário tenta executar uma operação inválida
+    When a operação falha
+    Then o sistema exibe uma mensagem de erro concisa e informativa
 ```
 
-> **Observação:**  
-> - Use os tags (`@Cadastro`, `@Login`, etc.) para agrupar e filtrar cenários durante a execução do BDD.  
-> - Os valores de exemplo podem ser ajustados conforme o ambiente de teste.  
-> - Se necessário, crie `Scenario Outline` adicionais para cobrir mais variações de dados.
+> **Dicas de implementação**  
+> - Use **Scenario Outline** para testar múltiplas combinações de dados inválidos.  
+> - Garanta que a mensagem de erro exibida no sistema corresponda exatamente ao texto esperado nos testes.  
+> - Para os testes de transferência, crie contas de teste com saldos conhecidos para garantir previsibilidade.  
+> - No cenário de pagamento, utilize datas dinâmicas (hoje, futuro) para validar a lógica de agendamento.  
+
+Esses cenários cobrem todos os requisitos de aceitação listados no documento e servem como base sólida para testes automatizados BDD.
