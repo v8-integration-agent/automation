@@ -1,61 +1,60 @@
-## 1. Quais testes falharam?
+**Resumo dos testes que falharam**
 
-| Data | Hora | Teste | Resultado |
-|------|------|-------|-----------|
-| 2025‑10‑02 | 14:09:26 | **Login inválido falhou** | **Falhou** |
-| 2025‑10‑02 | 14:09:28 | **Usuário deve atualizar telefone com campo vazio falhou** | **Falhou** |
-
-### 1.1 Login inválido falhou  
-O teste tentou validar que a mensagem de erro exibida ao submeter credenciais inválidas corresponda a “An internal error has occurred and has been logged.” Entretanto o navegador retornou: “The username and password could not be verified.”
-
-### 1.2 Usuário deve atualizar telefone com campo vazio falhou  
-O teste procurou um elemento com XPath `//*[@id="phone-error"]` e esperava que ele contenha o texto “Phone is required.” Contudo o Playwright não encontrou nenhum elemento que correspondesse ao seletor dentro de 5 s.
+| # | Teste | Status | Motivo da falha | Sugestão de correção |
+|---|-------|--------|-----------------|----------------------|
+| 1 | **Login válido falhou** | ❌ | O seletor `#leftPanel > p` não encontrou nenhum elemento dentro do tempo limite de 5 s, e o texto esperado “Welcome” não foi encontrado. | 1. Verificar se o seletor realmente corresponde ao elemento que aparece após o login. <br>2. Garantir que o login está concluído antes de verificar o texto (usar `await page.waitForNavigation()` ou `await expect(locator).toBeVisible()` antes da asserção). <br>3. Se o elemento pode aparecer dinamicamente, usar um seletor mais robusto (ex.: `text=Welcome`) ou aumentar o timeout. |
+| 2 | **Usuário deve atualizar telefone com campo vazio falhou** | ❌ | O teste excedeu o limite de 10 s sem produzir um erro específico; provavelmente ele ficou preso esperando por algum evento que nunca ocorreu (ex.: confirmação de erro, mensagem de validação, redirecionamento). | 1. Certificar que o fluxo de “atualizar telefone” realmente dispara uma resposta (ex.: mensagem de erro “O campo não pode ficar vazio”). <br>2. Usar `await expect(page.locator('.error-msg')).toBeVisible({ timeout: 8000 })` para aguardar a mensagem. <br>3. Se o fluxo envolver redirecionamento, usar `await page.waitForNavigation()` ou `await page.waitForURL()`. <br>4. Revisar se o elemento de entrada de telefone recebe foco corretamente e se o clique em “Salvar” realmente envia a requisição. |
 
 ---
 
-## 2. Motivo de cada falha
+## 1. Teste: **Login válido falhou**
 
-| Teste | Motivo provável | Evidências do log |
-|-------|----------------|-------------------|
-| Login inválido | **Mensagem inesperada** – O backend está retornando um erro de validação de credenciais em vez de um erro interno. | `Expected string: "An internal error has occurred and has been logg..."` <br>`Received string: "The username and password could not be verifi..."` |
-| Atualizar telefone vazio | **Elemento não encontrado** – O elemento de erro não está presente, seja porque o campo não acionou a validação, seja porque o seletor está errado. | `Received: <element(s) not found>` <br>`Locator('//*[@id="phone-error"]')` |
+### Por que falhou?
+- **Elemento não encontrado**: O Playwright tentou localizar `#leftPanel > p` mas não encontrou nada dentro de 5 s. Isso pode acontecer se:
+  - O seletor está incorreto (ex.: a estrutura DOM mudou).
+  - O elemento ainda não está renderizado quando a asserção é feita (o login ainda não terminou).
+  - O login falhou silenciosamente e a página não mostra o painel de boas‑vindas.
 
-### Possíveis causas detalhadas
+- **Texto esperado não encontrado**: Mesmo que o elemento fosse encontrado, o texto “Welcome” não estava presente, indicando que o fluxo de login não concluiu corretamente.
 
-| Teste | Causa | Como identificar |
-|-------|-------|-------------------|
-| Login inválido | 1. A mensagem esperada foi copiada de um teste que simulava um erro de servidor; o teste atual está testando a validação de credenciais.<br>2. O backend foi alterado e agora devolve “The username and password could not be verified.” | - Verificar o código do endpoint de login.<br>- Checar se existe algum mock/fixture que força um erro interno. |
-| Atualizar telefone vazio | 1. O elemento `<span id="phone-error">…</span>` pode ter sido renomeado ou removido.<br>2. O campo de telefone não foi submetido ou a validação não foi disparada antes da verificação.<br>3. O XPath usado (`//*[@id="phone-error"]`) é demasiado genérico ou não reflete a estrutura atual. | - Inspecionar a página no modo de depuração e confirmar a presença do ID.<br>- Verificar a lógica de validação no código‑fonte (React, Angular, etc.).<br>- Usar `page.locator('#phone-error')` ou `page.getByTestId` se o ID for alterado. |
+### Como corrigir?
 
----
-
-## 3. Sugestões de correção
-
-### 3.1 Login inválido falhou
-
-| Estratégia | Passos | Observação |
-|------------|--------|------------|
-| **Atualizar a expectativa** | 1. Substitua a string esperada no teste por “The username and password could not be verified.” <br>2. Adicione um comentário explicando que a mensagem mudou para evitar confusões futuras. | Se o objetivo for testar um erro interno, então deve‑se simular esse erro via mock ou alterar o cenário. |
-| **Teste o erro interno** | 1. Se o requisito for validar o erro interno, faça o mock do endpoint para retornar um 500 ou mensagem de erro interno.<br>2. Ajuste o `expect` para a string correta. | Use `http.request.intercept` ou `playwright-mock` para simular o erro. |
-| **Verificar a lógica de mensagens** | 1. Abra o backend ou serviço de autenticação e veja as mensagens que ele devolve em cada condição. <br>2. Caso haja variação (por exemplo, “Login failed” vs “Internal error”), teste ambos separadamente. | Pode ser útil criar um arquivo de constantes para mensagens, assim o teste e o código compartilham a mesma string. |
-
-### 3.2 Usuário deve atualizar telefone com campo vazio falhou
-
-| Estratégia | Passos | Observação |
-|------------|--------|------------|
-| **Confirmar seletor** | 1. Inspecione a página na ferramenta de desenvolvedor. <br>2. Verifique se há realmente um elemento com `id="phone-error"` ou se o ID foi alterado para algo como `phoneError`. <br>3. Se for diferente, atualize o XPath ou, melhor, use um seletor CSS: `page.locator('#phone-error')` ou um atributo `data-test-id`. | XPath é mais frágil. CSS ou `getByTestId` são mais estáveis. |
-| **Garantir que a validação seja disparada** | 1. No teste, clique no botão “Salvar” ou “Atualizar” depois de deixar o campo vazio.<br>2. Adicione um `await page.waitForTimeout(100);` (ou algo mais robusto) para dar tempo ao JavaScript de validar.<br>3. Depois disso, procure pelo elemento. | Se o botão não dispara a validação, o teste sempre falhará. |
-| **Usar `toContainText` no elemento correto** | 1. Depois de localizar o elemento, use: `await expect(locator).toContainText('Phone is required.');` <br>2. Se o elemento ainda não aparece, aumente o timeout ou use `waitForSelector`. | `page.waitForSelector('#phone-error', { state: 'visible', timeout: 5000 });` pode ser mais confiável. |
-| **Adicionar logs de depuração** | 1. Em caso de falha, capture um screenshot: `await page.screenshot({ path: 'error.png' });` <br>2. Capturar o HTML da página: `console.log(await page.content());` | Facilita identificar se a página mudou ou se há outro elemento de erro. |
-| **Revisar a lógica de testes** | 1. Certifique‑se de que o teste não está sendo executado em um estado onde o campo já está preenchido.<br>2. Se houver pré‑condições (login, navegação), garanta que elas estejam corretas. | Um fluxo errado pode impedir a renderização do erro. |
+| Etapa | Ação | Por quê |
+|-------|------|---------|
+| **a.** | **Verificar a existência do seletor** | Abra a aplicação manualmente, use o DevTools e confirme se `#leftPanel > p` realmente aponta para o parágrafo que contém “Welcome”. Se o layout mudou, atualize o seletor para algo estável, como `text=Welcome` ou `#leftPanel p`. |
+| **b.** | **Esperar a conclusão do login** | Depois de enviar as credenciais, aguarde a navegação ou um elemento de “loading” desaparecer: `await page.waitForNavigation();` ou `await expect(page.locator('#loading')).toBeHidden();`. |
+| **c.** | **Usar um timeout maior se a página for lenta** | Se a rede ou o backend estiver lento, aumente o timeout: `await expect(locator).toContainText('Welcome', { timeout: 12000 });`. |
+| **d.** | **Adicionar logs de debugging** | Imprima o HTML do `#leftPanel` antes da asserção: `console.log(await page.locator('#leftPanel').innerHTML());` para ver se o elemento está presente e qual seu conteúdo. |
+| **e.** | **Verificar logs do servidor** | Se o login depende de APIs externas, cheque os logs do backend para garantir que o usuário realmente está autenticado e que o token está sendo emitido. |
 
 ---
 
-## Resumo rápido
+## 2. Teste: **Usuário deve atualizar telefone com campo vazio falhou**
 
-| Teste | Falha | Solução recomendada |
-|-------|-------|---------------------|
-| Login inválido falhou | Texto de erro não corresponde | Atualizar a string esperada ou simular o erro interno |
-| Usuário deve atualizar telefone com campo vazio falhou | Elemento de erro não encontrado | Confirmar seletor, disparar validação, usar CSS/`data-testid`, capturar screenshot |
+### Por que falhou?
+- O teste excedeu o timeout de 10 s sem lançar uma exceção específica. Isso indica que:
+  1. **Nenhum evento de erro foi disparado**: A aplicação pode não ter mostrado a mensagem de validação ao enviar o telefone vazio.
+  2. **O fluxo de submissão pode estar preso**: O botão “Salvar” pode não estar funcionando (ex.: desabilitado ou não conectado a um manipulador).
+  3. **Esperança de redirecionamento não aconteceu**: Se o teste esperava voltar à lista de usuários, esse redirecionamento não ocorreu.
+  4. **O campo de telefone pode não ter sido encontrado**: O seletor usado para limpar ou deixar vazio o campo pode estar incorreto.
 
-Implementando essas correções, os testes deverão passar sem falhas e refletir corretamente o comportamento da aplicação. Se surgirem novos erros, verifique sempre o log completo – ele costuma indicar exatamente a expectativa versus a realidade. Boa codificação!
+### Como corrigir?
+
+| Etapa | Ação | Por quê |
+|-------|------|---------|
+| **a.** | **Confirmar o seletor do campo de telefone** | Use `page.locator('input[name="phone"]')` ou outro atributo confiável. Teste manualmente que o campo pode ser limpo: `await page.fill('input[name="phone"]', '');`. |
+| **b.** | **Garantir que o botão “Salvar” é clicável** | `await page.waitForSelector('button:has-text("Salvar")', { state: 'visible', timeout: 5000 });` e depois `await page.click('button:has-text("Salvar")');`. Se o botão está desabilitado, verifique se há validação de formulário que impede o clique. |
+| **c.** | **Aguardar a mensagem de validação** | Se a UI mostra algo como “O campo telefone não pode ficar vazio”, aguarde: `await expect(page.locator('.error')).toHaveText(/telefone/i, { timeout: 8000 });`. |
+| **d.** | **Adicionar timeout mais específico** | Em vez de esperar o timeout total do teste, use timeouts menores em cada espera: `await page.waitForTimeout(2000);` depois de cada ação. |
+| **e.** | **Revisar a lógica de validação** | Se a validação ocorre no backend, confirme que a requisição POST realmente está sendo enviada com o corpo vazio. Use o DevTools Network ou o interceptador `page.waitForResponse` para confirmar. |
+| **f.** | **Adicionar logs** | Exemplo: `console.log('Telefone enviado:', await page.inputValue('input[name="phone"]'));` e `console.log('Resposta do servidor:', await page.waitForResponse('/api/updatePhone').then(r => r.json()));`. |
+
+---
+
+## Observações Gerais
+
+- **Logs e Screenshot**: Sempre que um teste falhar, capture uma screenshot (`await page.screenshot({ path: 'error.png' });`) e registre o estado da página (`await page.content();`). Isso facilita a identificação de alterações inesperadas na UI.
+- **Seletores Resilientes**: Prefira seletores baseados em textos visíveis (`text=Welcome`) ou atributos estáveis (`data-testid`) em vez de seletores profundos como `#leftPanel > p`, que quebram com pequenas mudanças na estrutura DOM.
+- **Timeouts**: Ajustar os timeouts ajuda a diferenciar entre falhas de lógica e falhas de desempenho. Um timeout curto (`1000ms`) pode gerar falsos negativos; um tempo muito longo pode ocultar problemas de regressão.
+
+Com essas correções e práticas, os testes ficarão mais robustos e a manutenção será mais simples. Boa sorte!
