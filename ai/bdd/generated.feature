@@ -1,185 +1,164 @@
-## Gherkin – ParaBank Acceptance Scenarios  
-*(All scenarios are written in Portuguese, using the standard Gherkin syntax.)*
-
 ```gherkin
+# Feature: Cadastro de Usuário
 Feature: Cadastro de Usuário
-  Como um novo usuário
-  Eu quero registrar-me no ParaBank
-  Para que eu possa acessar as funcionalidades bancárias
+  Para garantir que apenas dados válidos sejam aceitos, o sistema deve validar
+  todos os campos obrigatórios e apresentar mensagens de erro claras.
 
-  Scenario: Cadastro bem-sucedido
-    Given o usuário preenche todos os campos obrigatórios com valores válidos
-    When o usuário envia o formulário de cadastro
-    Then a página exibe a mensagem "Cadastro concluído com sucesso"
-    And o usuário pode fazer login com as credenciais recém‑criada
+  Scenario: Cadastro bem‑sucedido
+    Given o usuário abre a página de cadastro
+    When ele preenche todos os campos obrigatórios com valores válidos
+    And clica em “Cadastrar”
+    Then o sistema exibe a mensagem “Cadastro concluído com sucesso”
+    And o usuário pode realizar login com as credenciais recém‑criado
 
-  Scenario Outline: Cadastro com campo obrigatório vazio
-    Given o usuário preenche todos os campos obrigatórios, exceto o "<campo>"
-    When o usuário envia o formulário de cadastro
-    Then a página exibe a mensagem de erro "O campo '<campo>' é obrigatório"
+  Scenario Outline: Cadastro com campo obrigatório em branco
+    Given o usuário abre a página de cadastro
+    When ele deixa o campo "<campo>" em branco e preenche os demais com dados válidos
+    And clica em “Cadastrar”
+    Then o sistema exibe a mensagem “Campo <campo> é obrigatório”
+
     Examples:
-      | campo       |
-      | Nome        |
-      | Email       |
-      | Telefone    |
-      | CEP         |
-      | Senha       |
-      | Confirmação |
+      | campo          |
+      | Nome           |
+      | Email          |
+      | Senha          |
+      | CEP            |
+      | Telefone       |
 
   Scenario Outline: Cadastro com dados inválidos
-    Given o usuário preenche o campo "<campo>" com "<valor_invalido>"
-    When o usuário envia o formulário de cadastro
-    Then a página exibe a mensagem de erro "<mensagem>"
+    Given o usuário abre a página de cadastro
+    When ele preenche o campo "<campo>" com valor "<valor_invalido>" e os demais com dados válidos
+    And clica em “Cadastrar”
+    Then o sistema exibe a mensagem “<mensagem_erro>”
+
     Examples:
-      | campo   | valor_invalido          | mensagem                                     |
-      | Email   | usuario@          | "Formato de e‑mail inválido"                 |
-      | Telefone| 123ABC            | "Telefone deve conter apenas números"        |
-      | CEP     | 12.345-678        | "CEP inválido. Use apenas dígitos"           |
+      | campo   | valor_invalido      | mensagem_erro                                  |
+      | Email   | usuario@          | Email inválido                                 |
+      | CEP     | 123                 | CEP inválido                                   |
+      | Telefone| 12abc               | Telefone inválido                              |
 
----
-
+# Feature: Login
 Feature: Login
-  Como um usuário cadastrado
-  Eu quero entrar no sistema
-  Para que eu possa acessar minha conta
+  O sistema deve permitir o acesso apenas com credenciais válidas.
 
   Scenario: Login com credenciais válidas
     Given o usuário está na página de login
-    When o usuário insere um e‑mail e senha válidos
-    And clica no botão "Entrar"
+    When ele insere email e senha válidos
+    And clica em “Entrar”
     Then o sistema redireciona para a página inicial da conta
-    And exibe a mensagem "Bem‑vindo, <Nome>"
 
-  Scenario Outline: Login com credenciais inválidas
+  Scenario: Login com credenciais inválidas
     Given o usuário está na página de login
-    When o usuário insere "<campo>" "<valor>"
-    And clica no botão "Entrar"
-    Then o sistema exibe a mensagem "<mensagem>"
-    Examples:
-      | campo   | valor              | mensagem                                |
-      | e‑mail  | usuario@exemplo.com| "Credenciais inválidas"                 |
-      | senha   | senhaErrada        | "Credenciais inválidas"                 |
-      | ambos   | errado@example.com| "Credenciais inválidas"                 |
+    When ele insere email ou senha inválidos
+    And clica em “Entrar”
+    Then o sistema exibe a mensagem “Credenciais inválidas”
 
----
+# Feature: Acesso à Conta (Saldo e Extrato)
+Feature: Acesso à Conta
+  O usuário deve visualizar saldo atualizado e extrato ordenado cronologicamente.
 
-Feature: Acesso à Conta – Saldo e Extrato
-  Como usuário autenticado
-  Eu quero ver saldo e extrato
-  Para ter controle das minhas finanças
+  Scenario: Exibição de saldo atualizado
+    Given o usuário está na página inicial da conta
+    When ele acessa a seção “Saldo”
+    Then o sistema exibe o saldo correto e atualizado
 
-  Scenario: Exibição de saldo atualizado após operação
-    Given o usuário possui saldo inicial de R$ 1.000,00
-    And realizou um depósito de R$ 500,00
-    When o usuário acessa a página de saldo
-    Then o saldo exibido é R$ 1.500,00
+  Scenario: Lista de extrato em ordem cronológica
+    Given o usuário está na página “Extrato”
+    When ele visualiza as transações
+    Then as transações são listadas em ordem decrescente de data (mais recente primeiro)
 
-  Scenario: Listagem de transações recentes no extrato
-    Given o usuário realizou três transações nas últimas 24h
-    When o usuário abre o extrato
-    Then as transações aparecem em ordem cronológica, da mais recente à mais antiga
-
----
-
+# Feature: Transferência de Fundos
 Feature: Transferência de Fundos
-  Como usuário autenticado
-  Eu quero transferir dinheiro para outra conta
-  Para pagar ou dividir despesas
+  O sistema deve gerenciar transferências entre contas, evitando saldo insuficiente.
 
   Scenario: Transferência bem‑sucedida
-    Given o usuário tem saldo de R$ 2.000,00 na conta A
-    And selecionou a conta B como destino
-    When o usuário envia R$ 300,00 para a conta B
-    Then a conta A é debitada em R$ 300,00
-    And a conta B é creditada em R$ 300,00
-    And ambas as contas registram a transação no histórico
+    Given o usuário está na página de transferências
+    When ele seleciona “Conta A” como origem
+    And seleciona “Conta B” como destino
+    And insere valor “100.00” (≤ saldo disponível)
+    And confirma a transferência
+    Then o valor “100.00” é debitado da Conta A
+    And o valor “100.00” é creditado na Conta B
+    And a transação é registrada nos históricos de ambas as contas
 
-  Scenario Outline: Transferência com valor superior ao saldo
-    Given o usuário tem saldo de R$ <saldo> na conta A
-    And selecionou a conta B como destino
-    When o usuário tenta enviar R$ <valor> para a conta B
-    Then o sistema exibe a mensagem "Saldo insuficiente"
+  Scenario: Transferência com saldo insuficiente
+    Given o usuário está na página de transferências
+    When ele tenta transferir “2000.00” (excede o saldo)
+    And confirma a transferência
+    Then o sistema exibe a mensagem “Saldo insuficiente”
+
+  Scenario Outline: Transferência com valor inválido
+    Given o usuário na página de transferências
+    When ele insere valor "<valor>"
+    And confirma
+    Then o sistema exibe a mensagem “<mensagem>”
+
     Examples:
-      | saldo | valor |
-      | 500   | 600   |
-      | 100   | 150   |
+      | valor          | mensagem                   |
+      | 0              | Valor mínimo é 0,01        |
+      | -50.00         | Valor negativo não permitido|
 
-  Scenario: Transferência para conta inexistente
-    Given o usuário selecionou a conta "999999" como destino
-    When o usuário tenta enviar R$ 200,00 para a conta
-    Then o sistema exibe a mensagem "Conta de destino não encontrada"
-
----
-
+# Feature: Solicitação de Empréstimo
 Feature: Solicitação de Empréstimo
-  Como usuário autenticado
-  Eu quero solicitar um empréstimo
-  Para financiar meus projetos
+  O usuário pode solicitar empréstimo e receber feedback de aprovação ou negação.
 
   Scenario: Empréstimo aprovado
-    Given o usuário informa valor R$ 20.000,00 e renda anual R$ 120.000,00
-    When o usuário envia a solicitação
-    Then o sistema exibe a mensagem "Empréstimo aprovado"
+    Given o usuário está na página de empréstimo
+    When ele insere valor “5000” e renda anual “60000”
+    And envia a solicitação
+    Then o sistema exibe “Aprovado”
 
-  Scenario: Empréstimo negado por renda insuficiente
-    Given o usuário informa valor R$ 20.000,00 e renda anual R$ 30.000,00
-    When o usuário envia a solicitação
-    Then o sistema exibe a mensagem "Empréstimo negado – renda insuficiente"
+  Scenario: Empréstimo negado
+    Given o usuário está na página de empréstimo
+    When ele insere valor “20000” e renda anual “30000”
+    And envia a solicitação
+    Then o sistema exibe “Negado”
 
----
-
+# Feature: Pagamento de Contas
 Feature: Pagamento de Contas
-  Como usuário autenticado
-  Eu quero pagar contas recorrentes ou pontuais
-  Para manter meus débitos em dia
+  O usuário deve registrar pagamentos com dados completos e respeitar a data agendada.
 
-  Scenario: Pagamento pontual imediato
-    Given o usuário preenche beneficiário "João Silva"
-    And endereço "Rua Exemplo, 123"
-    And cidade "São Paulo"
-    And estado "SP"
-    And CEP "01001-000"
-    And telefone "11987654321"
-    And conta de destino "123456"
-    And valor R$ 150,00
-    And data de pagamento "Hoje"
-    When o usuário confirma o pagamento
-    Then o sistema registra a transação no histórico
-    And exibe a mensagem "Pagamento efetuado com sucesso"
+  Scenario: Pagamento futuro agendado
+    Given o usuário está na página de pagamento de contas
+    When ele preenche beneficiário, endereço, cidade, estado, CEP, telefone, conta de destino, valor “150.00” e data “2025-12-31”
+    And confirma
+    Then o sistema registra o pagamento
+    And o pagamento aparece no histórico de transações com data “2025-12-31”
 
-  Scenario: Pagamento agendado para data futura
-    Given o usuário define data de pagamento "2025‑12‑01"
-    When o usuário confirma o pagamento
-    Then o sistema exibe a mensagem "Pagamento agendado para 01/12/2025"
-    And a transação aparece no histórico com status "Agendado"
+  Scenario Outline: Pagamento com campo obrigatório em branco
+    Given o usuário na página de pagamento
+    When ele deixa o campo "<campo>" em branco e preenche os demais
+    And confirma
+    Then o sistema exibe “Campo <campo> é obrigatório”
 
----
+    Examples:
+      | campo           |
+      | Beneficiário    |
+      | Endereço        |
+      | Cidade          |
+      | Estado          |
+      | CEP             |
+      | Telefone        |
+      | Conta de destino|
+      | Valor           |
+      | Data            |
 
+# Feature: Requisitos Gerais de Navegação e Usabilidade
 Feature: Navegação e Usabilidade
-  Como usuário
-  Eu quero navegar pelo sistema sem erros
-  Para ter uma experiência consistente
+  Garantir que todas as páginas carreguem sem erros e que mensagens de erro sejam claras.
 
-  Scenario: Carregamento sem erros de navegação
-    Given o usuário navega por todas as páginas do aplicativo
-    Then todas as páginas carregam sem mensagens de erro
+  Scenario: Todas as páginas carregam corretamente
+    Given o usuário navega por todas as páginas do sistema
+    When ele acessa cada uma
+    Then nenhuma página apresenta erro de carregamento
 
-  Scenario: Consistência de links e menus
-    Given o usuário acessa qualquer página
-    When ele verifica o cabeçalho
-    Then todos os menus e links estão presentes e funcionam
-    And o link "Minha Conta" leva ao painel correto
+  Scenario: Mensagens de erro claras e objetivas
+    Given o usuário tenta uma operação inválida (ex.: transferir com saldo insuficiente)
+    When a ação falha
+    Then a mensagem exibida é clara, objetiva e localizada próximo ao campo afetado
 
-  Scenario: Exibição clara de mensagens de erro
-    Given o usuário tenta executar uma operação inválida
-    When a operação falha
-    Then o sistema exibe uma mensagem de erro concisa e informativa
+  Scenario: Consistência de menus e links
+    Given o usuário está em qualquer página
+    When ele verifica a barra de navegação
+    Then todos os links (Home, Conta, Transferência, Empréstimo, Pagamento) estão presentes e levam à página correta
 ```
-
-> **Dicas de implementação**  
-> - Use **Scenario Outline** para testar múltiplas combinações de dados inválidos.  
-> - Garanta que a mensagem de erro exibida no sistema corresponda exatamente ao texto esperado nos testes.  
-> - Para os testes de transferência, crie contas de teste com saldos conhecidos para garantir previsibilidade.  
-> - No cenário de pagamento, utilize datas dinâmicas (hoje, futuro) para validar a lógica de agendamento.  
-
-Esses cenários cobrem todos os requisitos de aceitação listados no documento e servem como base sólida para testes automatizados BDD.
